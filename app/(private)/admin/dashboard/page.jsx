@@ -2,6 +2,7 @@
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchAccount } from "@/hooks/accounts/actions";
+import { useFetchCenters } from "@/hooks/centers/actions";
 import React from "react";
 
 function AdminDashboard() {
@@ -11,7 +12,13 @@ function AdminDashboard() {
     refetch: refetchAccount,
   } = useFetchAccount();
 
-  if (isLoadingAccount) {
+  const {
+    isLoading: isLoadingCenters,
+    data: centers,
+    refetch: refetchCenters,
+  } = useFetchCenters();
+
+  if (isLoadingAccount || isLoadingCenters) {
     return <LoadingSpinner />;
   }
 
