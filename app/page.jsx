@@ -1,7 +1,7 @@
 import React from "react";
 
 function LandingPage() {
-  return <div>LandingPage</div>;
+  return <div className="text-[var(--mainRed)]">LandingPage</div>;
 }
 
 export default LandingPage;

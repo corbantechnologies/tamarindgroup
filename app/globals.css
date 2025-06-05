@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --mainRed: #e20715;
+  --mainBlue: #2a2d7b;
 }
 
 /* @theme inline {
@@ -16,5 +18,56 @@
 
 body {
   background: var(--background);
+  color: var(--foreground);
+}
+
+/* Buttons */
+
+/* Primary unbordered */
+.primary-button {
+  background: var(--mainRed);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  background: var(--foreground);
+  color: var(--mainRed);
+}
+
+/* Bordered primary */
+.bordered-primary-button {
+  background: transparent;
+  border: 1px solid var(--mainRed);
+  color: var(--mainRed);
+  cursor: pointer;
+}
+
+.bordered-primary-button:hover {
+  background: var(--mainRed);
+  color: var(--foreground);
+}
+
+/* Secondary unbordered */
+.secondary-button {
+  background: var(--mainBlue);
+  color: var(--foreground);
+}
+
+.secondary-button:hover {
+  background: var(--foreground);
+  color: var(--mainBlue);
+}
+
+/* Bordered secondary */
+.bordered-secondary-button {
+  background: transparent;
+  border: 1px solid var(--mainBlue);
+  color: var(--mainBlue);
+  cursor: pointer;
+}
+
+.bordered-secondary-button:hover {
+  background: var(--mainBlue);
   color: var(--foreground);
 }
