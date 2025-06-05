@@ -18,6 +18,8 @@ function AdminDashboard() {
     refetch: refetchCenters,
   } = useFetchCenters();
 
+  console.log(centers);
+
   if (isLoadingAccount || isLoadingCenters) {
     return <LoadingSpinner />;
   }
