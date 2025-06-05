@@ -26,13 +26,15 @@ body {
 /* Primary unbordered */
 .primary-button {
   background: var(--mainRed);
-  color: var(--foreground);
+  color: var(--background);
   cursor: pointer;
-}
+  transition: background 0.3s ease, color 0.3s ease;
 
-.primary-button:hover {
-  background: var(--foreground);
-  color: var(--mainRed);
+  &:hover {
+    background: transparent;
+    border: 1px solid var(--mainRed);
+    color: var(--mainRed);
+  }
 }
 
 /* Bordered primary */
@@ -41,23 +43,28 @@ body {
   border: 1px solid var(--mainRed);
   color: var(--mainRed);
   cursor: pointer;
-}
+  transition: background 0.3s ease, color 0.3s ease;
 
-.bordered-primary-button:hover {
-  background: var(--mainRed);
-  color: var(--foreground);
+  &:hover {
+    background: var(--mainRed);
+    color: var(--foreground);
+  }
 }
 
 /* Secondary unbordered */
 .secondary-button {
   background: var(--mainBlue);
-  color: var(--foreground);
+  color: var(--background);
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+
+  &:hover {
+    background: transparent;
+    border: 1px solid var(--mainBlue);
+    color: var(--mainBlue);
+  }
 }
 
-.secondary-button:hover {
-  background: var(--foreground);
-  color: var(--mainBlue);
-}
 
 /* Bordered secondary */
 .bordered-secondary-button {
