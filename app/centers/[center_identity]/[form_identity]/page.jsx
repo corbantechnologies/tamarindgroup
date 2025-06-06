@@ -1,6 +1,7 @@
 "use client";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
+import { useFetchFeedbacksByFeedbackForm } from "@/hooks/feedbacks/actions";
 import React, { use } from "react";
 
 function FeedbackFormDetail({ params }) {
@@ -12,9 +13,15 @@ function FeedbackFormDetail({ params }) {
     refetch: refetchFeedbackForm,
   } = useFetchFeedbackForm(form_identity);
 
-  console.log(feedbackForm);
+  const {
+    isLoadingFeedbacks: isLoadingFeedbacksByFeedbackForm,
+    data: feedbacks,
+    refetch: refetchFeedbacksByFeedbackForm,
+  } = useFetchFeedbacksByFeedbackForm(form_identity);
 
-  if (isLoadingFeedbackForm) {
+  console.log(feedbacks);
+
+  if (isLoadingFeedbackForm || isLoadingFeedbacksByFeedbackForm) {
     return <LoadingSpinner />;
   }
 
@@ -80,6 +87,8 @@ function FeedbackFormDetail({ params }) {
               </div>
             </div>
           </div>
+
+          {}
         </div>
       </section>
     </div>
