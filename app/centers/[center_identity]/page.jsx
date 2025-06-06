@@ -20,7 +20,13 @@ function CenterDetail({ params }) {
     <section id="center">
       {/* Feedback forms */}
       <div className="mb-3 p-3 rounded shadow bg-white border-gray-300">
-        <h6 className="text-xl mb-3 font-semibold">Feedback Forms</h6>
+        <div className="mb-3 flex justify-between items-center border-b border-gray-300 pb-3">
+          <h6 className="text-xl font-semibold">Feedback Forms</h6>
+
+          <button className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]">
+            Create Form
+          </button>
+        </div>
 
         {center?.feedback_forms?.length > 0 ? (
           <div className="overflow-x-auto">
