@@ -55,6 +55,32 @@ function FeedbackFormDetail({ params }) {
 
       <section className="mb-3">
         {/* Display all reviews */}
+        <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
+          <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
+            <h6 className="text-xl font-semibold">Responses</h6>
+
+            <div>
+              {/* search bar */}
+              <input
+                type="text"
+                className="border border-gray-300"
+                placeholder="Search"
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <div>
+                <label className="mr-2">Start Date:</label>
+                <input type="date" className="border border-gray-300" />
+              </div>
+
+              <div>
+                <label className="mr-2">End Date:</label>
+                <input type="date" className="border border-gray-300" />
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );
