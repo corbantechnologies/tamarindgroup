@@ -1,24 +1,26 @@
 "use client";
-
-import { signOut } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 
-function Navbar() {
+function Navbar({ center }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
-
   return (
-    <div className="sticky top-0 z-50 p-3 bg-white shadow">
+    <div className="sticky bg-white p-3 top-0 z-50 shadow">
       <div className="flex justify-between items-center">
-        <Link href="/admin/dashboard">
-          <Image src="/logo.png" width={80} height={80} alt="logo" />
+        <Link href={`/centers/${center?.center_identity}`}>
+          <Image
+            src={center?.logo || "/logo.png"}
+            width={80}
+            height={80}
+            alt="logo"
+          />
         </Link>
 
         {/* Hamburger Menu */}
@@ -51,23 +53,25 @@ function Navbar() {
           <ul className="flex flex-col md:flex-row md:items-center gap-4">
             <li
               className={`${
-                pathname === "/admin/dashboard"
+                pathname === `/centers/${center?.center_identity}`
                   ? "text-[var(--mainRed)]"
                   : "text-[var(--mainBlue)]"
               } hover:text-[var(--mainBlue)] transition-colors`}
             >
-              <Link href="/admin/dashboard" onClick={() => setIsOpen(false)}>
+              <Link href={`/centers/${center?.center_identity}`}>
                 Dashboard
               </Link>
             </li>
-
-            <li>
-              <button
-                onClick={() => signOut()}
-                className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
-              >
-                Logout
-              </button>
+            <li
+              className={`${
+                pathname === `/centers/${center?.center_identity}/forms`
+                  ? "text-[var(--mainRed)]"
+                  : "text-[var(--mainBlue)]"
+              } hover:text-[var(--mainBlue)] transition-colors`}
+            >
+              <Link href={`/centers/${center?.center_identity}/forms`}>
+                Forms
+              </Link>
             </li>
           </ul>
         </div>
