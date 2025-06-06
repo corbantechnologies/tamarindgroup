@@ -1,6 +1,7 @@
 "use client";
 
 import { useFetchCenter } from "@/hooks/centers/actions";
+import Link from "next/link";
 import React, { use } from "react";
 
 function CenterDetail({ params }) {
@@ -14,7 +15,7 @@ function CenterDetail({ params }) {
     refetch: refetchCenter,
   } = useFetchCenter(center_identity);
 
-  console.log(center);
+  console.log(center?.feedback_forms[2]);
 
   return (
     <section id="center">
@@ -52,7 +53,7 @@ function CenterDetail({ params }) {
               <tbody>
                 {center?.feedback_forms?.map((feedbackForm, index) => (
                   <tr
-                    key={feedbackForm?.id}
+                    key={feedbackForm?.reference}
                     className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
                   >
                     <td className="px-2 py-2 border-t text-sm">
@@ -71,9 +72,12 @@ function CenterDetail({ params }) {
                       {feedbackForm?.is_accomodation ? "Yes" : "No"}
                     </td>
                     <td className="px-2 py-2 border-t text-sm">
-                      <button className="text-blue-600 hover:underline">
-                        View
-                      </button>
+                      <Link
+                        href={`/centers/${center_identity}/${feedbackForm?.form_identity}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Manage
+                      </Link>
                     </td>
                   </tr>
                 ))}
