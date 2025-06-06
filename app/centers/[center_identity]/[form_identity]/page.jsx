@@ -75,17 +75,23 @@ function FeedbackFormDetail({ params }) {
             <h6 className="text-xl font-semibold">Responses</h6>
             <input
               type="text"
-              className="border border-gray-300"
+              className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Search"
             />
             <div className="flex gap-4">
               <div>
-                <label className="mr-2">Start Date:</label>
-                <input type="date" className="border border-gray-300" />
+                <label className="mr-2 text-gray-700">Start Date:</label>
+                <input
+                  type="date"
+                  className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
               <div>
-                <label className="mr-2">End Date:</label>
-                <input type="date" className="border border-gray-300" />
+                <label className="mr-2 text-gray-700">End Date:</label>
+                <input
+                  type="date"
+                  className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
             </div>
           </div>
@@ -123,19 +129,21 @@ function FeedbackFormDetail({ params }) {
                   ))}
                 </tbody>
               </table>
-              <div className="mt-4">
+              <div className="mt-4 flex items-center gap-2 mb-4">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
+                  className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   Prev
                 </button>
-                <span>
+                <span className="px-4 py-2 text-gray-700">
                   Page {currentPage} of {totalPages}
                 </span>
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
+                  className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
