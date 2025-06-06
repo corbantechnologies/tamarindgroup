@@ -6,14 +6,14 @@
 
 import { apiActions } from "@/tools/api";
 
-export const getFeedbacksByCenter = async (center_identity, axios) => {
+export const getFeedbacksByCenter = async (center_identity) => {
   const response = await apiActions?.get(
     `/api/v1/feedback/?center=${center_identity}`
   );
   return response?.data?.results || [];
 };
 
-export const getFeedbacksByFeedbackForm = async (form_identity, axios) => {
+export const getFeedbacksByFeedbackForm = async (form_identity) => {
   const response = await apiActions?.get(
     `/api/v1/feedback/?feedback_form=${form_identity}`
   );
@@ -21,13 +21,13 @@ export const getFeedbacksByFeedbackForm = async (form_identity, axios) => {
   return response?.data?.results || [];
 };
 
-export const getFeedbacksByDate = async (date, axios) => {
+export const getFeedbacksByDate = async (date) => {
   const response = await apiActions?.get(`/api/v1/feedback/?date=${date}`);
 
   return response?.data?.results || [];
 };
 
-export const getFeedbacksByDateRange = async (startDate, endDate, axios) => {
+export const getFeedbacksByDateRange = async (startDate, endDate) => {
   const response = await apiActions?.get(
     `/api/v1/feedback/?start_date=${startDate}&end_date=${endDate}`
   );
@@ -38,8 +38,7 @@ export const getFeedbacksByAllFilters = async (
   center_identity,
   form_identity,
   startDate,
-  endDate,
-  axios
+  endDate
 ) => {
   const response = await apiActions?.get(
     `/api/v1/feedback/?feedback_form=${form_identity}&start_date=${startDate}&end_date=${endDate}`
