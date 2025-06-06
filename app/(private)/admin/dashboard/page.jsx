@@ -5,6 +5,7 @@ import { useFetchAccount } from "@/hooks/accounts/actions";
 import { useFetchCenters } from "@/hooks/centers/actions";
 import { useFetchFeedbackForms } from "@/hooks/feedbackforms/actions";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 function AdminDashboard() {
@@ -62,37 +63,28 @@ function AdminDashboard() {
         {centers?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {centers?.map((center) => (
-              <div
+              <Link
+                href={`/centers/${center?.center_identity}`}
                 key={center.reference}
-                className="bg-white p-4 rounded shadow"
+                className="bg-white p-4 rounded shadow flex flex-row items-start"
               >
-                <div>
-                  {center?.logo ? (
+                <div className="flex-shrink-0 w-1/3">
+                  <div className="flex-shrink-0 w-1/3">
                     <Image
-                      src={center?.logo}
+                      src={center?.logo || "/logo.png"}
                       alt={center?.name}
-                      width={50}
-                      height={50}
-                      className="w-full h-32 object-cover mb-2 rounded"
+                      width={128}
+                      height={128}
+                      className="w-full h-32 object-contain mb-2 rounded"
                     />
-                  ) : (
-                    <Image
-                      src="/logo.png"
-                      alt={center?.name}
-                      width={50}
-                      height={50}
-                      className="w-full h-32 object-cover mb-2 rounded"
-                    />
-                  )}
+                  </div>
                 </div>
-                <div>
+                <div className="flex-1 pl-4">
                   <h4 className="font-bold">{center?.name}</h4>
-                  <p>{center?.description}</p>
-                  <p className="text-sm text-gray-500">
-                    Reference: {center?.reference}
-                  </p>
+                  <p>{center?.location}</p>
+                  <p>{center?.contact}</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
