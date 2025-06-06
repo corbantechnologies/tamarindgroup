@@ -20,6 +20,7 @@ function FeedbackFormDetail({ params }) {
   } = useFetchFeedbacksByFeedbackForm(form_identity);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFeedback, setSelectedFeedback] = useState(null);
   const itemsPerPage = 10;
 
   const paginateFeedbacks = (feedbacks, page, itemsPerPage) => {
@@ -38,6 +39,9 @@ function FeedbackFormDetail({ params }) {
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) setCurrentPage(newPage);
   };
+
+  const openModal = (feedback) => setSelectedFeedback(feedback);
+  const closeModal = () => setSelectedFeedback(null);
 
   if (isLoadingFeedbackForm || isLoadingFeedbacksByFeedbackForm) {
     return <LoadingSpinner />;
@@ -75,62 +79,80 @@ function FeedbackFormDetail({ params }) {
             <h6 className="text-xl font-semibold">Responses</h6>
             <input
               type="text"
-              className="border border-gray-300"
+              className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Search"
             />
             <div className="flex gap-4">
               <div>
-                <label className="mr-2">Start Date:</label>
-                <input type="date" className="border border-gray-300" />
+                <label className="mr-2 text-gray-700">Start Date:</label>
+                <input
+                  type="date"
+                  className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
               <div>
-                <label className="mr-2">End Date:</label>
-                <input type="date" className="border border-gray-300" />
+                <label className="mr-2 text-gray-700">End Date:</label>
+                <input
+                  type="date"
+                  className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
             </div>
           </div>
 
           {feedbacks?.length > 0 ? (
-            <div>
-              <table className="w-full text-left">
+            <div className="overflow-x-auto">
+              <table className="w-full table-auto border rounded border-gray-300">
                 <thead>
-                  <tr>
-                    <th>Guest Name</th>
-                    <th>Form</th>
-                    <th>Center</th>
-                    <th>Date</th>
-                    <th>Responses</th>
+                  <tr className="bg-gray-200 text-gray-700 text-base">
+                    <th className="px-2 py-2 text-left min-w-[120px]">
+                      Guest Name
+                    </th>
+                    <th className="px-2 py-2 text-left min-w-[80px]">Date</th>
+                    <th className="px-2 py-2 text-left min-w-[120px]">
+                      Responses
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedFeedbacks.map((feedback) => (
-                    <tr key={feedback.reference}>
-                      <td>{feedback.guest_name}</td>
-                      <td>{feedback.feedback_form}</td>
-                      <td>{feedback.center}</td>
-                      <td>
+                  {paginatedFeedbacks.map((feedback, index) => (
+                    <tr
+                      key={feedback.reference}
+                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-2 py-2 border-t border-gray-300 text-base">
+                        {feedback.guest_name}
+                      </td>
+                      <td className="px-2 py-2 border-t border-gray-300 text-base">
                         {new Date(feedback.created_at).toLocaleDateString()}
                       </td>
-                      <td>
-                        <button className="text-blue-500">View</button>
+                      <td className="px-2 py-2 border-t border-gray-300 text-base">
+                        <button
+                          onClick={() => openModal(feedback)}
+                          className="text-blue-500 cursor-pointer"
+                        >
+                          View
+                        </button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <div className="mt-4">
+              <div className="mt-4 flex items-center gap-2 mb-4">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
+                  className="px-4 py-1 cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   Prev
                 </button>
-                <span>
+                <span className="px-4 py-2 text-gray-700">
                   Page {currentPage} of {totalPages}
                 </span>
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
+                  className="px-4 py-1 cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
@@ -141,6 +163,30 @@ function FeedbackFormDetail({ params }) {
           )}
         </div>
       </section>
+
+      {selectedFeedback && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded shadow-lg w-1/2">
+            <h3 className="text-lg font-semibold mb-2">
+              Responses for {selectedFeedback.guest_name}
+            </h3>
+            <ul className="list-disc pl-5">
+              {selectedFeedback.responses.map((resp) => (
+                <li key={resp.reference} className="mb-1">
+                  {resp.actual_question.text}:{" "}
+                  {resp.rating ?? resp.text ?? resp.yes_no}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={closeModal}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

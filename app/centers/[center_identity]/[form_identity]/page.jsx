@@ -20,6 +20,7 @@ function FeedbackFormDetail({ params }) {
   } = useFetchFeedbacksByFeedbackForm(form_identity);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [expandedRows, setExpandedRows] = useState(new Set());
   const itemsPerPage = 10;
 
   const paginateFeedbacks = (feedbacks, page, itemsPerPage) => {
@@ -37,6 +38,16 @@ function FeedbackFormDetail({ params }) {
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) setCurrentPage(newPage);
+  };
+
+  const toggleRow = (reference) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (newExpandedRows.has(reference)) {
+      newExpandedRows.delete(reference);
+    } else {
+      newExpandedRows.add(reference);
+    }
+    setExpandedRows(newExpandedRows);
   };
 
   if (isLoadingFeedbackForm || isLoadingFeedbacksByFeedbackForm) {
@@ -104,7 +115,7 @@ function FeedbackFormDetail({ params }) {
                     <th className="px-2 py-2 text-left min-w-[120px]">
                       Guest Name
                     </th>
-                    <th className="px-2 py-2 text-left min-w-[120px]">Date</th>
+                    <th className="px-2 py-2 text-left min-w-[80px]">Date</th>
                     <th className="px-2 py-2 text-left min-w-[120px]">
                       Responses
                     </th>
@@ -112,20 +123,59 @@ function FeedbackFormDetail({ params }) {
                 </thead>
                 <tbody>
                   {paginatedFeedbacks.map((feedback, index) => (
-                    <tr
-                      key={feedback.reference}
-                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                    >
-                      <td className="px-2 py-2 border-t border-gray-300 text-base">
-                        {feedback.guest_name}
-                      </td>
-                      <td className="px-2 py-2 border-t border-gray-300 text-base">
-                        {new Date(feedback.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-2 py-2 border-t border-gray-300 text-base">
-                        <button className="text-blue-500">View</button>
-                      </td>
-                    </tr>
+                    <React.Fragment key={feedback.reference}>
+                      <tr
+                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      >
+                        <td className="px-2 py-2 border-t border-gray-300 text-base">
+                          {feedback.guest_name}
+                        </td>
+                        <td className="px-2 py-2 border-t border-gray-300 text-base">
+                          {new Date(feedback.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-2 py-2 border-t border-gray-300 text-base">
+                          <button
+                            onClick={() => toggleRow(feedback.reference)}
+                            className="text-blue-500 cursor-pointer"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedRows.has(feedback.reference) && (
+                        <tr
+                          className={
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }
+                        >
+                          <td
+                            colSpan="3"
+                            className="px-2 py-2 border-t border-gray-300"
+                          >
+                            <ul>
+                              {feedback.responses.map((resp) => (
+                                <li key={resp.reference} className="mb-2">
+                                  <div className="font-semibold italic">
+                                    {resp.actual_question.text}:
+                                  </div>
+                                  <div>
+                                    {resp.rating !== null
+                                      ? resp.rating
+                                      : resp.text !== null
+                                      ? resp.text
+                                      : resp.yes_no !== null
+                                      ? resp.yes_no
+                                        ? "Yes"
+                                        : "No"
+                                      : "N/A"}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
@@ -133,7 +183,7 @@ function FeedbackFormDetail({ params }) {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="px-4 py-1 cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   Prev
                 </button>
@@ -143,7 +193,7 @@ function FeedbackFormDetail({ params }) {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="px-4 py-1 cursor-pointer bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
