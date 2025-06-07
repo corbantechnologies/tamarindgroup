@@ -2,6 +2,7 @@
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import { createFeedback } from "@/services/feedbacks";
+import Image from "next/image";
 import React, { use, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -113,164 +114,182 @@ function Feedback({ params }) {
   if (isLoadingFeedbackForm) return <LoadingSpinner />;
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">{feedbackForm?.title}</h2>
-      <p className="text-gray-600 mb-6">{feedbackForm?.description}</p>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Guest Name *
-          </label>
-          <input
-            type="text"
-            name="guest_name"
-            value={formData.guest_name}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
-        </div>
-        {feedbackForm?.is_accomodation && (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Apartment No *
-              </label>
-              <input
-                type="text"
-                name="apartment_no"
-                value={formData.apartment_no}
-                onChange={handleInputChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Arrival Date *
-              </label>
-              <input
-                type="date"
-                name="arrival_date"
-                value={formData.arrival_date}
-                onChange={handleInputChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Checkout Date *
-              </label>
-              <input
-                type="date"
-                name="checkout_date"
-                value={formData.checkout_date}
-                onChange={handleInputChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-          </>
-        )}
-        {feedbackForm?.questions?.map((question) => (
-          <div key={question.reference} className="space-y-2">
+    <div className="flex items-center justify-center min-h-screen py-2">
+      <div className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow ">
+        <Image
+          className="mx-auto"
+          src="/logo.png"
+          alt="Tamarind Logo"
+          width={100}
+          height={100}
+        />
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          {feedbackForm?.title}
+        </h2>
+        <p className="text-gray-600 mb-6">{feedbackForm?.description}</p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
             <label className="block text-sm font-medium text-gray-700">
-              {question.text}
+              Guest Name *
             </label>
-            {question.type === "RATING" && (
-              <input
-                type="number"
-                min="1"
-                max="5"
-                value={
-                  formData.answers.find((a) => a.question === question.identity)
-                    ?.rating || ""
-                }
-                onChange={(e) =>
-                  handleAnswerChange(question.identity, {
-                    rating: parseInt(e.target.value),
-                  })
-                }
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Rate 1-5"
-              />
-            )}
-            {question.type === "YES_NO" && (
-              <select
-                value={
-                  formData.answers.find((a) => a.question === question.identity)
-                    ?.yes_no || ""
-                }
-                onChange={(e) =>
-                  handleAnswerChange(question.identity, {
-                    yes_no: e.target.value === "true",
-                  })
-                }
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select</option>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
-            )}
-            {question.type === "TEXT" && (
-              <textarea
-                value={
-                  formData.answers.find((a) => a.question === question.identity)
-                    ?.text || ""
-                }
-                onChange={(e) =>
-                  handleAnswerChange(question.identity, {
-                    text: e.target.value,
-                  })
-                }
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                rows="3"
-                placeholder="Enter your comments"
-              />
-            )}
-            {question.sub_questions.length > 0 && (
-              <div className="ml-4 mt-2 space-y-2">
-                {question.sub_questions.map((subQ) => (
-                  <div key={subQ.reference}>
-                    <label className="block text-sm font-medium text-gray-700">
-                      {subQ.text}
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="5"
-                      value={
-                        formData.answers.find(
-                          (a) => a.question === question.identity
-                        )?.sub_responses?.[subQ.identity]?.rating || ""
-                      }
-                      onChange={(e) =>
-                        handleAnswerChange(
-                          question.identity,
-                          { rating: parseInt(e.target.value) },
-                          subQ.identity
-                        )
-                      }
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Rate 1-5"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <input
+              type="text"
+              name="guest_name"
+              value={formData.guest_name}
+              onChange={handleInputChange}
+              className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
           </div>
-        ))}
-        {error && <p className="text-red-600">{error}</p>}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
-        >
-          {isSubmitting ? "Submitting..." : "Submit"}
-        </button>
-      </form>
+          {feedbackForm?.is_accomodation && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Apartment No *
+                </label>
+                <input
+                  type="text"
+                  name="apartment_no"
+                  value={formData.apartment_no}
+                  onChange={handleInputChange}
+                  className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Arrival Date *
+                  </label>
+                  <input
+                    type="date"
+                    name="arrival_date"
+                    value={formData.arrival_date}
+                    onChange={handleInputChange}
+                    className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Checkout Date *
+                  </label>
+                  <input
+                    type="date"
+                    name="checkout_date"
+                    value={formData.checkout_date}
+                    onChange={handleInputChange}
+                    className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+            </>
+          )}
+          {feedbackForm?.questions?.map((question) => (
+            <div key={question.reference} className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                {question.text}
+              </label>
+              {question.type === "RATING" && (
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={
+                    formData.answers.find(
+                      (a) => a.question === question.identity
+                    )?.rating || ""
+                  }
+                  onChange={(e) =>
+                    handleAnswerChange(question.identity, {
+                      rating: parseInt(e.target.value),
+                    })
+                  }
+                  className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Rate 1-5"
+                />
+              )}
+              {question.type === "YES_NO" && (
+                <select
+                  value={
+                    formData.answers.find(
+                      (a) => a.question === question.identity
+                    )?.yes_no || ""
+                  }
+                  onChange={(e) =>
+                    handleAnswerChange(question.identity, {
+                      yes_no: e.target.value === "true",
+                    })
+                  }
+                  className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              )}
+              {question.type === "TEXT" && (
+                <textarea
+                  value={
+                    formData.answers.find(
+                      (a) => a.question === question.identity
+                    )?.text || ""
+                  }
+                  onChange={(e) =>
+                    handleAnswerChange(question.identity, {
+                      text: e.target.value,
+                    })
+                  }
+                  className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows="3"
+                  placeholder="Enter your comments"
+                />
+              )}
+              {question.sub_questions.length > 0 && (
+                <div className="ml-4 mt-2 space-y-2">
+                  {question.sub_questions.map((subQ) => (
+                    <div key={subQ.reference}>
+                      <label className="block text-sm font-medium text-gray-700">
+                        {subQ.text}
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="5"
+                        value={
+                          formData.answers.find(
+                            (a) => a.question === question.identity
+                          )?.sub_responses?.[subQ.identity]?.rating || ""
+                        }
+                        onChange={(e) =>
+                          handleAnswerChange(
+                            question.identity,
+                            { rating: parseInt(e.target.value) },
+                            subQ.identity
+                          )
+                        }
+                        className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Rate 1-5"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          {error && <p className="text-red-600">{error}</p>}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full text-white secondary-button font-medium rounded-lg text-sm px-5 py-2.5 text-center ${
+              isSubmitting && "opacity-50 cursor-not-allowed"
+            }`}
+          >
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
