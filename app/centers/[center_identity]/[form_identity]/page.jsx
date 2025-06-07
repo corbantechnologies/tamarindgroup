@@ -2,6 +2,7 @@
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import { useFetchFeedbacksByFeedbackForm } from "@/hooks/feedbacks/actions";
+import Link from "next/link";
 import React, { use, useState } from "react";
 
 function FeedbackFormDetail({ params }) {
@@ -56,15 +57,29 @@ function FeedbackFormDetail({ params }) {
 
   return (
     <div id="feedback-form">
+      <h6 className="text-sm text-gray-400 uppercase mb-2">
+        {feedbackForm?.center}
+      </h6>
       <section className="mb-3 mt-3">
-        <h6 className="text-sm text-gray-400 uppercase mb-2">
-          {feedbackForm?.center}
-        </h6>
-        <h5 className="text-xl font-semibold mb-3">
-          {feedbackForm?.title} Reviews
-        </h5>
+        <div className="mb-3 flex md:flex-row flex-col justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">
+              {feedbackForm?.title} Reviews
+            </h2>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Link
+              href={`/feedback/${feedbackForm?.form_identity}`}
+              target="_blank"
+              className="primary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+            >
+              Public Link
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 py-2">
           <div className="md:border-r border-gray-300">
             <p className="font-semibold">Total Reviews</p>
             <h3 className="text-2xl font-bold">
@@ -84,11 +99,11 @@ function FeedbackFormDetail({ params }) {
         <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
           <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
             <h6 className="text-xl font-semibold">Responses</h6>
-            <input
+            {/* <input
               type="text"
               className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Search"
-            />
+            /> */}
             <div className="flex gap-4">
               <div>
                 <label className="mr-2 text-gray-700">Start Date:</label>

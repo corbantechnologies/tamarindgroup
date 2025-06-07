@@ -58,6 +58,24 @@ function AdminDashboard() {
         </div>
       </section>
 
+      <section className="mb-3 mt-3 py-3">
+        <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
+          <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
+            <h6 className="text-xl font-semibold">Responses</h6>
+
+            <button className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]">
+              Create Center
+            </button>
+          </div>
+
+          {centers?.length > 0 ? (
+            <></>
+          ) : (
+            <div className="p-3 w-full bg-blue-100">No centers available</div>
+          )}
+        </div>
+      </section>
+
       <section id="centers" className="mb-3">
         <h6 className="text-xl font-semibold italic underline mb-2">Centers</h6>
         {centers?.length > 0 ? (
