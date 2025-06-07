@@ -80,7 +80,7 @@ function FeedbackFormDetail({ params }) {
         </div>
       </section>
 
-      <section className="mb-3 mt-3">
+      <section className="mb-3 mt-3 py-3">
         <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
           <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
             <h6 className="text-xl font-semibold">Responses</h6>

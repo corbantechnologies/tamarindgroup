@@ -6,6 +6,10 @@
 
 import { apiActions } from "@/tools/api";
 
+export const createFeedback = async (formData) => {
+  await apiActions?.post(`/api/v1/feedback/create/`, formData);
+};
+
 export const getFeedbacksByCenter = async (center_identity) => {
   const response = await apiActions?.get(
     `/api/v1/feedback/?center=${center_identity}`
