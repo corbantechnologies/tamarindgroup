@@ -56,31 +56,31 @@ function FeedbackFormDetail({ params }) {
 
   return (
     <div id="feedback-form">
-      <section className="mb-3">
+      <section className="mb-3 mt-3">
         <h6 className="text-sm text-gray-400 uppercase mb-2">
           {feedbackForm?.center}
         </h6>
-        <h5 className="text-xl font-semibold">{feedbackForm?.title} Reviews</h5>
+        <h5 className="text-xl font-semibold mb-3">
+          {feedbackForm?.title} Reviews
+        </h5>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p>Total Reviews</p>
-            <h3>{feedbackForm?.total_submissions}</h3>
+          <div className="md:border-r border-gray-300">
+            <p className="font-semibold">Total Reviews</p>
+            <h3 className="text-2xl font-bold">
+              {feedbackForm?.total_submissions}
+            </h3>
           </div>
-          <div>
-            <p>Average Ratings</p>
-            <h3>{feedbackForm?.total_submissions}</h3>
-          </div>
-          <div>
-            <p>5</p>
-            <p>4</p>
-            <p>3</p>
-            <p>2</p>
-            <p>1</p>
+          <div className="md:border-r border-gray-300">
+            <p className="font-semibold">Average Ratings</p>
+            <h3 className="text-2xl font-bold">
+              {feedbackForm?.total_submissions}
+            </h3>
           </div>
         </div>
       </section>
 
-      <section className="mb-3">
+      <section className="mb-3 mt-3">
         <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
           <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
             <h6 className="text-xl font-semibold">Responses</h6>
