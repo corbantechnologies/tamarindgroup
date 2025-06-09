@@ -1,8 +1,10 @@
 "use client";
 
+import LoadingSpinner from "@/components/general/LoadingSpinner";
+import CreateFeedbackForm from "@/forms/feedbackforms/CreateFeedbackForm";
 import { useFetchCenter } from "@/hooks/centers/actions";
 import Link from "next/link";
-import React, { use } from "react";
+import React, { use, useState } from "react";
 
 function CenterDetail({ params }) {
   const { center_identity } = use(params);
@@ -15,16 +17,22 @@ function CenterDetail({ params }) {
     refetch: refetchCenter,
   } = useFetchCenter(center_identity);
 
-  console.log(center?.feedback_forms[2]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  if (isLoadingCenter) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <section id="center">
       {/* Feedback forms */}
-      <div className="mb-3 p-3 rounded shadow bg-white border-gray-300">
+      <div className="mb-3 px-4 py-6 rounded shadow bg-white border-gray-300">
         <div className="mb-3 flex justify-between items-center border-b border-gray-300 pb-3">
           <h6 className="text-xl font-semibold">Feedback Forms</h6>
-
-          <button className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]">
+          <button
+            className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
+            onClick={() => setIsModalOpen(true)}
+          >
             Create Form
           </button>
         </div>
@@ -90,6 +98,24 @@ function CenterDetail({ params }) {
           </div>
         )}
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsModalOpen(false)}
+            >
+              ✕
+            </button>
+            <CreateFeedbackForm
+              refetch={refetchCenter}
+              closeModal={() => setIsModalOpen(false)}
+              center={center}
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 }

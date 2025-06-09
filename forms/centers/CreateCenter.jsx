@@ -71,7 +71,7 @@ function CreateCenter({ refetch, closeModal }) {
                 id="logo"
                 name="logo"
                 onChange={(e) => setFieldValue("logo", e.target.files[0])}
-                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none py-2 px-3"
               />
             </div>
 

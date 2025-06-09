@@ -4,11 +4,15 @@ import { apiActions } from "@/tools/api";
 
 // authenticated API calls for feedback forms
 export const createFeedbackForm = async (formData, axios) => {
-  await apiActions?.post(`/api/v1/feedbackforms/`, formData);
+  await apiActions?.post(`/api/v1/feedbackforms/`, formData, axios);
 };
 
 export const updateFeedbackForm = async (formData, axios, form_identity) => {
-  await apiActions?.patch(`/api/v1/feedbackforms/${form_identity}/`, formData);
+  await apiActions?.patch(
+    `/api/v1/feedbackforms/${form_identity}/`,
+    formData,
+    axios
+  );
 };
 
 export const deleteFeedbackForm = async (form_identity, axios) => {
