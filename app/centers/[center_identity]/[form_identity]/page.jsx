@@ -1,5 +1,6 @@
 "use client";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import CreateQuestion from "@/forms/questions/CreateQuestion";
 import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import { useFetchFeedbacksByFeedbackForm } from "@/hooks/feedbacks/actions";
 import Link from "next/link";
@@ -22,6 +23,7 @@ function FeedbackFormDetail({ params }) {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedRows, setExpandedRows] = useState(new Set());
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 10;
 
   const paginateFeedbacks = (feedbacks, page, itemsPerPage) => {
@@ -67,19 +69,25 @@ function FeedbackFormDetail({ params }) {
               {feedbackForm?.title} Reviews
             </h2>
           </div>
-
-          <div>
-            <Link
-              href={`/feedback/${feedbackForm?.form_identity}`}
-              target="_blank"
-              className="primary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+          <div className="flex gap-2">
+            <button
+              className="secondary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+              onClick={() => setIsModalOpen(true)}
             >
-              Public Link
-            </Link>
+              Add question
+            </button>
+            {feedbackForm?.questions?.length > 0 && (
+              <Link
+                href={`/feedback/${feedbackForm?.form_identity}`}
+                target="_blank"
+                className="primary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+              >
+                Public Link
+              </Link>
+            )}
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 py-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 py-2 ">
           <div className="md:border-r border-gray-300">
             <p className="font-semibold">Total Reviews</p>
             <h3 className="text-2xl font-bold">
@@ -92,18 +100,18 @@ function FeedbackFormDetail({ params }) {
               {feedbackForm?.total_submissions}
             </h3>
           </div>
+          <div>
+            <p className="font-semibold">Total Questions</p>
+            <h3 className="text-2xl font-bold">
+              {feedbackForm?.questions?.length}
+            </h3>
+          </div>
         </div>
       </section>
-
       <section className="mb-3 mt-3 py-3">
         <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
           <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
             <h6 className="text-xl font-semibold">Responses</h6>
-            {/* <input
-              type="text"
-              className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Search"
-            /> */}
             <div className="flex gap-4">
               <div>
                 <label className="mr-2 text-gray-700">Start Date:</label>
@@ -121,7 +129,6 @@ function FeedbackFormDetail({ params }) {
               </div>
             </div>
           </div>
-
           {feedbacks?.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full table-auto border rounded border-gray-300">
@@ -219,6 +226,24 @@ function FeedbackFormDetail({ params }) {
           )}
         </div>
       </section>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsModalOpen(false)}
+            >
+              ✕
+            </button>
+            <CreateQuestion
+              feedbackForm={feedbackForm}
+              refetch={refetchFeedbackForm}
+              closeModal={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
