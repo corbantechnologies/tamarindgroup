@@ -37,7 +37,7 @@ function Login() {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow ">
+      <div className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow">
         <Image
           className="mx-auto"
           src="/logo.png"
@@ -83,15 +83,7 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          {/* <button
-            type="submit"
-            className={`w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "Login"}
-          </button> */}
+          
           <button
             type="submit"
             className={`w-full text-white secondary-button font-medium rounded-lg text-sm px-5 py-2.5 text-center ${
