@@ -1,12 +1,13 @@
 "use client";
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import CreateCenter from "@/forms/centers/CreateCenter";
 import { useFetchAccount } from "@/hooks/accounts/actions";
 import { useFetchCenters } from "@/hooks/centers/actions";
 import { useFetchFeedbackForms } from "@/hooks/feedbackforms/actions";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 
 function AdminDashboard() {
   const {
@@ -26,6 +27,8 @@ function AdminDashboard() {
     data: feedbackForms,
     refetch: refetchFeedbackForms,
   } = useFetchFeedbackForms();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   console.log(centers);
 
@@ -49,7 +52,6 @@ function AdminDashboard() {
             <h4 className="font-bold">Total Centers</h4>
             <p>{centers?.length || 0}</p>
           </div>
-
           <div className="bg-white p-4 rounded shadow">
             <h4 className="font-bold">Feedback Forms</h4>
             <p>{feedbackForms?.length || 0}</p>
@@ -61,8 +63,10 @@ function AdminDashboard() {
         <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
           <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
             <h6 className="text-xl font-semibold">Centers</h6>
-
-            <button className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]">
+            <button
+              className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
+              onClick={() => setIsModalOpen(true)}
+            >
               Create Center
             </button>
           </div>
@@ -74,7 +78,6 @@ function AdminDashboard() {
                   <thead>
                     <tr className="bg-gray-200 text-gray-700 text-sm">
                       <th className="border border-gray-300 px-4 py-2">Name</th>
-
                       <th className="border border-gray-300 px-4 py-2">
                         Phone
                       </th>
@@ -92,7 +95,6 @@ function AdminDashboard() {
                         <td className="border border-gray-300 px-4 py-2">
                           {center?.name}
                         </td>
-
                         <td className="border border-gray-300 px-4 py-2">
                           {center?.contact}
                         </td>
@@ -118,6 +120,23 @@ function AdminDashboard() {
           )}
         </div>
       </section>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsModalOpen(false)}
+            >
+              ✕
+            </button>
+            <CreateCenter
+              refetch={refetchCenters}
+              closeModal={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
