@@ -39,8 +39,7 @@ function AdminDashboard() {
         <h2 className="text-2xl font-bold">Hello {account?.name}</h2>
       </section>
 
-      <section id="summary" className="mb-3">
-        <h6 className="text-xl font-semibold italic underline mb-2">Summary</h6>
+      <section id="summary" className="mb-3 mt-3">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white p-4 rounded shadow">
             <h4 className="font-bold">Information</h4>
@@ -61,7 +60,7 @@ function AdminDashboard() {
       <section className="mb-3 mt-3 py-3">
         <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
           <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
-            <h6 className="text-xl font-semibold">Responses</h6>
+            <h6 className="text-xl font-semibold">Centers</h6>
 
             <button className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]">
               Create Center
@@ -69,45 +68,55 @@ function AdminDashboard() {
           </div>
 
           {centers?.length > 0 ? (
-            <></>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full table-auto border rounded border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-700 text-sm">
+                      <th className="border border-gray-300 px-4 py-2">Name</th>
+
+                      <th className="border border-gray-300 px-4 py-2">
+                        Phone
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2">
+                        Location
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {centers?.map((center) => (
+                      <tr key={center.reference}>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {center?.name}
+                        </td>
+
+                        <td className="border border-gray-300 px-4 py-2">
+                          {center?.contact}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {center?.location}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <Link
+                            href={`/centers/${center?.center_identity}`}
+                            className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
+                          >
+                            View
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <div className="p-3 w-full bg-blue-100">No centers available</div>
           )}
         </div>
-      </section>
-
-      <section id="centers" className="mb-3">
-        <h6 className="text-xl font-semibold italic underline mb-2">Centers</h6>
-        {centers?.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {centers?.map((center) => (
-              <Link
-                href={`/centers/${center?.center_identity}`}
-                key={center.reference}
-                className="bg-white p-4 rounded shadow flex flex-row items-start"
-              >
-                <div className="flex-shrink-0 w-1/3">
-                  <div className="flex-shrink-0 w-1/3">
-                    <Image
-                      src={center?.logo || "/logo.png"}
-                      alt={center?.name}
-                      width={128}
-                      height={128}
-                      className="w-full h-32 object-contain mb-2 rounded"
-                    />
-                  </div>
-                </div>
-                <div className="flex-1 pl-4">
-                  <h4 className="font-bold">{center?.name}</h4>
-                  <p>{center?.location}</p>
-                  <p>{center?.contact}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p>No centers available.</p>
-        )}
       </section>
     </div>
   );
