@@ -7,10 +7,12 @@ function LandingPage() {
   return (
     <>
       <Navbar />
-      <div className="container mx-auto p-4">
-        {/* top section */}
-        <section className="grid sm:grid-cols-2 gap-4 px-4 py-18 items-center">
-          <div>
+      <section
+        className="relative min-h-[80vh] flex items-center justify-center bg-cover bg-center"
+        style={{ backgroundImage: "url('/dhow.jpg')" }}
+      >
+        <div className="container mx-auto px-4 text-center text-white">
+          <div className="max-w-2xl mx-auto bg-black/50 p-8 rounded-md">
             <h1 className="text-5xl font-bold mb-4">The Tamarind Group</h1>
             <p className="mb-4">
               Experience Kenya’s best restaurants with Tamarind Group. Enjoy
@@ -24,18 +26,8 @@ function LandingPage() {
               </Link>
             </div>
           </div>
-
-          <div>
-            <Image
-              src="/dhow.jpg"
-              alt="hero"
-              width={600}
-              height={600}
-              className="w-full rounded-md"
-            />
-          </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </>
   );
 }
