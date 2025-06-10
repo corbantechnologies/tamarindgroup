@@ -1,5 +1,6 @@
 import Navbar from "@/components/landing/Navbar";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 function LandingPage() {
@@ -17,6 +18,21 @@ function LandingPage() {
               Tamarind Mombasa. Every meal is a culinary adventure. Craving a
               lively grill, seafood feast, or refined bar experience?
             </p>
+            <div className="mt-3">
+              <Link href={"/"} className="secondary-button p-3 font-bold">
+                Directory →
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <Image
+              src="/dhow.jpg"
+              alt="hero"
+              width={600}
+              height={600}
+              className="w-full rounded-md"
+            />
           </div>
         </section>
       </div>
