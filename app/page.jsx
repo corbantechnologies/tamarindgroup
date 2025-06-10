@@ -1,3 +1,4 @@
+import Directory from "@/components/landing/Directory";
 import Navbar from "@/components/landing/Navbar";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,6 +29,7 @@ function LandingPage() {
           </div>
         </div>
       </section>
+      <Directory />
     </>
   );
 }
