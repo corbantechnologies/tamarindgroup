@@ -103,6 +103,7 @@ function Feedback({ params }) {
         answers: [],
       });
       refetchFeedbackForm();
+      console.log(error);
     } catch (err) {
       setError(`Failed to submit feedback: ${err.message}`);
       toast.error(`Failed to submit feedback.`);
