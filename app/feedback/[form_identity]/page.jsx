@@ -78,21 +78,32 @@ function Feedback({ params }) {
     setIsSubmitting(true);
     setError(null);
 
-    if (
-      feedbackForm?.is_accomodation &&
-      (!formData.apartment_no ||
+    // Create a copy of formData, excluding accommodation fields if not needed
+    const submissionData = {
+      feedback_form: formData.feedback_form,
+      guest_name: formData.guest_name,
+      answers: formData.answers,
+    };
+
+    if (feedbackForm?.is_accomodation) {
+      if (
+        !formData.apartment_no ||
         !formData.arrival_date ||
-        !formData.checkout_date)
-    ) {
-      setError(
-        "Apartment No, Arrival Date, and Checkout Date are required for accommodation forms."
-      );
-      setIsSubmitting(false);
-      return;
+        !formData.checkout_date
+      ) {
+        setError(
+          "Apartment No, Arrival Date, and Checkout Date are required for accommodation forms."
+        );
+        setIsSubmitting(false);
+        return;
+      }
+      submissionData.apartment_no = formData.apartment_no;
+      submissionData.arrival_date = formData.arrival_date;
+      submissionData.checkout_date = formData.checkout_date;
     }
 
     try {
-      await createFeedback(formData);
+      await createFeedback(submissionData);
       toast.success("Feedback submitted successfully!");
       setFormData({
         feedback_form: form_identity,
@@ -103,7 +114,6 @@ function Feedback({ params }) {
         answers: [],
       });
       refetchFeedbackForm();
-      console.log(error);
     } catch (err) {
       setError(`Failed to submit feedback: ${err.message}`);
       toast.error(`Failed to submit feedback.`);
