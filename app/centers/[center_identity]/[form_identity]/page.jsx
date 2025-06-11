@@ -139,7 +139,7 @@ function FeedbackFormDetail({ params }) {
         <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
           <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
             <h6 className="text-xl font-semibold">Responses</h6>
-            <div className="flex gap-4">
+            <div className="flex md:flex-row flex-col gap-4">
               <div>
                 <label className="mr-2 text-gray-700">Specific Date:</label>
                 <input
@@ -182,7 +182,7 @@ function FeedbackFormDetail({ params }) {
               </div>
               <button
                 onClick={handleClearFilters}
-                className="secondary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+                className="primary-button px-3 py-1 rounded text-center leading-[1.5rem]"
               >
                 Clear
               </button>
