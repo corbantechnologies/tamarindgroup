@@ -74,6 +74,12 @@ function FeedbackFormDetail({ params }) {
     setExpandedRows(newExpandedRows);
   };
 
+  const handleClearFilters = () => {
+    setSpecificDate("");
+    setStartDate("");
+    setEndDate("");
+  };
+
   if (isLoadingFeedbackForm || isLoadingFeedbacks) {
     return <LoadingSpinner />;
   }
@@ -171,13 +177,23 @@ function FeedbackFormDetail({ params }) {
                   className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+              <button
+                onClick={handleClearFilters}
+                className="secondary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+              >
+                Clear
+              </button>
             </div>
+          </div>
+          <div className="mb-4 text-sm text-gray-600">
+            {filterFeedbacks.length} records found
           </div>
           {filterFeedbacks?.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full table-auto border rounded border-gray-300">
                 <thead>
                   <tr className="bg-gray-200 text-gray-700 text-base">
+                    <th className="px-2 py-2 text-left min-w-[2px]">#</th>
                     <th className="px-2 py-2 text-left min-w-[120px]">
                       Guest Name
                     </th>
@@ -188,61 +204,70 @@ function FeedbackFormDetail({ params }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedFeedbacks.map((feedback, index) => (
-                    <React.Fragment key={feedback.reference}>
-                      <tr
-                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                      >
-                        <td className="px-2 py-2 border-t border-gray-300 text-base">
-                          {feedback.guest_name}
-                        </td>
-                        <td className="px-2 py-2 border-t border-gray-300 text-base">
-                          {new Date(feedback.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-2 py-2 border-t border-gray-300 text-base">
-                          <button
-                            onClick={() => toggleRow(feedback.reference)}
-                            className="text-blue-500 cursor-pointer"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                      {expandedRows.has(feedback.reference) && (
+                  {paginatedFeedbacks.map((feedback, index) => {
+                    const displayIndex =
+                      (currentPage - 1) * itemsPerPage + index + 1;
+                    return (
+                      <React.Fragment key={feedback.reference}>
                         <tr
                           className={
                             index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           }
                         >
-                          <td
-                            colSpan="3"
-                            className="px-2 py-2 border-t border-gray-300"
-                          >
-                            <ul>
-                              {feedback.responses.map((resp) => (
-                                <li key={resp.reference} className="mb-2">
-                                  <div className="font-semibold italic">
-                                    {resp.actual_question.text}:
-                                  </div>
-                                  <div>
-                                    {resp.rating !== null
-                                      ? resp.rating
-                                      : resp.text !== null
-                                      ? resp.text
-                                      : resp.yes_no !== null
-                                      ? resp.yes_no
-                                        ? "Yes"
-                                        : "No"
-                                      : "N/A"}
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
+                          <td className="px-2 py-2 border-t border-gray-300 text-base text-center">
+                            {displayIndex}
+                          </td>
+                          <td className="px-2 py-2 border-t border-gray-300 text-base">
+                            {feedback.guest_name}
+                          </td>
+                          <td className="px-2 py-2 border-t border-gray-300 text-base">
+                            {new Date(feedback.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-2 py-2 border-t border-gray-300 text-base">
+                            <button
+                              onClick={() => toggleRow(feedback.reference)}
+                              className="text-blue-500 cursor-pointer"
+                            >
+                              View
+                            </button>
                           </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
+                        {expandedRows.has(feedback.reference) && (
+                          <tr
+                            className={
+                              index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                            }
+                          >
+                            <td
+                              colSpan="4"
+                              className="px-2 py-2 border-t border-gray-300"
+                            >
+                              <ul>
+                                {feedback.responses.map((resp) => (
+                                  <li key={resp.reference} className="mb-2">
+                                    <div className="font-semibold italic">
+                                      {resp.actual_question.text}:
+                                    </div>
+                                    <div>
+                                      {resp.rating !== null
+                                        ? resp.rating
+                                        : resp.text !== null
+                                        ? resp.text
+                                        : resp.yes_no !== null
+                                        ? resp.yes_no
+                                          ? "Yes"
+                                          : "No"
+                                        : "N/A"}
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
               <div className="mt-4 flex items-center gap-2 mb-4">
