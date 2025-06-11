@@ -4,7 +4,7 @@ import CreateQuestion from "@/forms/questions/CreateQuestion";
 import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import { useFetchFeedbacksByFeedbackForm } from "@/hooks/feedbacks/actions";
 import Link from "next/link";
-import React, { use, useState } from "react";
+import React, { use, useState, useMemo } from "react";
 
 function FeedbackFormDetail({ params }) {
   const { center_identity, form_identity } = use(params);
@@ -16,15 +16,36 @@ function FeedbackFormDetail({ params }) {
   } = useFetchFeedbackForm(form_identity);
 
   const {
-    isLoadingFeedbacks: isLoadingFeedbacksByFeedbackForm,
-    data: feedbacks,
-    refetch: refetchFeedbacksByFeedbackForm,
+    isLoading: isLoadingFeedbacks,
+    data: allFeedbacks,
+    refetch: refetchFeedbacks,
   } = useFetchFeedbacksByFeedbackForm(form_identity);
+
+  const [specificDate, setSpecificDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 10;
+
+  const filterFeedbacks = useMemo(() => {
+    if (!allFeedbacks) return [];
+    const createdAtDate = (feedback) =>
+      new Date(feedback.created_at).toISOString().split("T")[0];
+    if (specificDate) {
+      return allFeedbacks.filter(
+        (feedback) => createdAtDate(feedback) === specificDate
+      );
+    } else if (startDate && endDate) {
+      return allFeedbacks.filter((feedback) => {
+        const date = createdAtDate(feedback);
+        return date >= startDate && date <= endDate;
+      });
+    }
+    return allFeedbacks; // Default to all feedbacks if no filter
+  }, [allFeedbacks, specificDate, startDate, endDate]);
 
   const paginateFeedbacks = (feedbacks, page, itemsPerPage) => {
     const startIndex = (page - 1) * itemsPerPage;
@@ -33,11 +54,11 @@ function FeedbackFormDetail({ params }) {
   };
 
   const paginatedFeedbacks = paginateFeedbacks(
-    feedbacks || [],
+    filterFeedbacks,
     currentPage,
     itemsPerPage
   );
-  const totalPages = Math.ceil((feedbacks?.length || 0) / itemsPerPage);
+  const totalPages = Math.ceil((filterFeedbacks?.length || 0) / itemsPerPage);
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) setCurrentPage(newPage);
@@ -53,7 +74,13 @@ function FeedbackFormDetail({ params }) {
     setExpandedRows(newExpandedRows);
   };
 
-  if (isLoadingFeedbackForm || isLoadingFeedbacksByFeedbackForm) {
+  const handleClearFilters = () => {
+    setSpecificDate("");
+    setStartDate("");
+    setEndDate("");
+  };
+
+  if (isLoadingFeedbackForm || isLoadingFeedbacks) {
     return <LoadingSpinner />;
   }
 
@@ -87,7 +114,7 @@ function FeedbackFormDetail({ params }) {
             )}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 py-2 ">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 py-2">
           <div className="md:border-r border-gray-300">
             <p className="font-semibold">Total Reviews</p>
             <h3 className="text-2xl font-bold">
@@ -114,26 +141,62 @@ function FeedbackFormDetail({ params }) {
             <h6 className="text-xl font-semibold">Responses</h6>
             <div className="flex gap-4">
               <div>
+                <label className="mr-2 text-gray-700">Specific Date:</label>
+                <input
+                  type="date"
+                  value={specificDate}
+                  onChange={(e) => {
+                    setSpecificDate(e.target.value);
+                    setStartDate("");
+                    setEndDate("");
+                  }}
+                  className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={startDate || endDate}
+                />
+              </div>
+              <div>
                 <label className="mr-2 text-gray-700">Start Date:</label>
                 <input
                   type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setSpecificDate("");
+                  }}
                   className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={specificDate}
                 />
               </div>
               <div>
                 <label className="mr-2 text-gray-700">End Date:</label>
                 <input
                   type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setSpecificDate("");
+                  }}
                   className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={specificDate}
                 />
               </div>
+              <button
+                onClick={handleClearFilters}
+                className="secondary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+              >
+                Clear
+              </button>
             </div>
           </div>
-          {feedbacks?.length > 0 ? (
+          <div className="mb-4 text-sm text-gray-600">
+            {filterFeedbacks.length} records found
+          </div>
+          {filterFeedbacks?.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full table-auto border rounded border-gray-300">
                 <thead>
                   <tr className="bg-gray-200 text-gray-700 text-base">
+                    <th className="px-2 py-2 text-left min-w-[2px]">#</th>
                     <th className="px-2 py-2 text-left min-w-[120px]">
                       Guest Name
                     </th>
@@ -144,61 +207,70 @@ function FeedbackFormDetail({ params }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedFeedbacks.map((feedback, index) => (
-                    <React.Fragment key={feedback.reference}>
-                      <tr
-                        className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                      >
-                        <td className="px-2 py-2 border-t border-gray-300 text-base">
-                          {feedback.guest_name}
-                        </td>
-                        <td className="px-2 py-2 border-t border-gray-300 text-base">
-                          {new Date(feedback.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-2 py-2 border-t border-gray-300 text-base">
-                          <button
-                            onClick={() => toggleRow(feedback.reference)}
-                            className="text-blue-500 cursor-pointer"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                      {expandedRows.has(feedback.reference) && (
+                  {paginatedFeedbacks.map((feedback, index) => {
+                    const displayIndex =
+                      (currentPage - 1) * itemsPerPage + index + 1;
+                    return (
+                      <React.Fragment key={feedback.reference}>
                         <tr
                           className={
                             index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           }
                         >
-                          <td
-                            colSpan="3"
-                            className="px-2 py-2 border-t border-gray-300"
-                          >
-                            <ul>
-                              {feedback.responses.map((resp) => (
-                                <li key={resp.reference} className="mb-2">
-                                  <div className="font-semibold italic">
-                                    {resp.actual_question.text}:
-                                  </div>
-                                  <div>
-                                    {resp.rating !== null
-                                      ? resp.rating
-                                      : resp.text !== null
-                                      ? resp.text
-                                      : resp.yes_no !== null
-                                      ? resp.yes_no
-                                        ? "Yes"
-                                        : "No"
-                                      : "N/A"}
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
+                          <td className="px-2 py-2 border-t border-gray-300 text-base text-center">
+                            {displayIndex}
+                          </td>
+                          <td className="px-2 py-2 border-t border-gray-300 text-base">
+                            {feedback.guest_name}
+                          </td>
+                          <td className="px-2 py-2 border-t border-gray-300 text-base">
+                            {new Date(feedback.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-2 py-2 border-t border-gray-300 text-base">
+                            <button
+                              onClick={() => toggleRow(feedback.reference)}
+                              className="text-blue-500 cursor-pointer"
+                            >
+                              View
+                            </button>
                           </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
+                        {expandedRows.has(feedback.reference) && (
+                          <tr
+                            className={
+                              index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                            }
+                          >
+                            <td
+                              colSpan="4"
+                              className="px-2 py-2 border-t border-gray-300"
+                            >
+                              <ul>
+                                {feedback.responses.map((resp) => (
+                                  <li key={resp.reference} className="mb-2">
+                                    <div className="font-semibold italic">
+                                      {resp.actual_question.text}:
+                                    </div>
+                                    <div>
+                                      {resp.rating !== null
+                                        ? resp.rating
+                                        : resp.text !== null
+                                        ? resp.text
+                                        : resp.yes_no !== null
+                                        ? resp.yes_no
+                                          ? "Yes"
+                                          : "No"
+                                        : "N/A"}
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
               <div className="mt-4 flex items-center gap-2 mb-4">
