@@ -7,7 +7,7 @@ import Link from "next/link";
 import React, { use, useState, useMemo } from "react";
 
 function FeedbackFormDetail({ params }) {
-  const { center_identity, form_identity } = use(params);
+  const { form_identity } = use(params);
 
   const {
     isLoading: isLoadingFeedbackForm,
@@ -86,6 +86,7 @@ function FeedbackFormDetail({ params }) {
 
   return (
     <div id="feedback-form">
+      {/* top section */}
       <h6 className="text-sm text-gray-400 uppercase mb-2">
         {feedbackForm?.center}
       </h6>
@@ -114,7 +115,7 @@ function FeedbackFormDetail({ params }) {
             )}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 py-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3 py-2">
           <div className="md:border-r border-gray-300">
             <p className="font-semibold">Total Reviews</p>
             <h3 className="text-2xl font-bold">
@@ -127,14 +128,23 @@ function FeedbackFormDetail({ params }) {
               {feedbackForm?.total_submissions}
             </h3>
           </div>
-          <div>
+          <div className="md:border-r border-gray-300">
             <p className="font-semibold">Total Questions</p>
             <h3 className="text-2xl font-bold">
               {feedbackForm?.questions?.length}
             </h3>
           </div>
+          <div>
+            <p className="font-semibold">Average Rating</p>
+            <h3 className="text-2xl font-bold">
+              {feedbackForm?.average_rating}
+            </h3>
+          </div>
         </div>
       </section>
+      {/* end of top section */}
+
+      {/* lower section */}
       <section className="mb-3 mt-3 py-3">
         <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
           <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
