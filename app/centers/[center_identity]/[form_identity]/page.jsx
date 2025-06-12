@@ -5,9 +5,10 @@ import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import { useFetchFeedbacksByFeedbackForm } from "@/hooks/feedbacks/actions";
 import Link from "next/link";
 import React, { use, useState, useMemo } from "react";
+import StarRating from "@/components/general/StarRating";
 
 function FeedbackFormDetail({ params }) {
-  const { center_identity, form_identity } = use(params);
+  const { form_identity } = use(params);
 
   const {
     isLoading: isLoadingFeedbackForm,
@@ -86,6 +87,7 @@ function FeedbackFormDetail({ params }) {
 
   return (
     <div id="feedback-form">
+      {/* top section */}
       <h6 className="text-sm text-gray-400 uppercase mb-2">
         {feedbackForm?.center}
       </h6>
@@ -121,10 +123,11 @@ function FeedbackFormDetail({ params }) {
               {feedbackForm?.total_submissions}
             </h3>
           </div>
+
           <div className="md:border-r border-gray-300">
-            <p className="font-semibold">Average Ratings</p>
+            <p className="font-semibold">Average Rating</p>
             <h3 className="text-2xl font-bold">
-              {feedbackForm?.total_submissions}
+              <StarRating rating={feedbackForm?.average_rating || 0} />
             </h3>
           </div>
           <div>
@@ -135,6 +138,9 @@ function FeedbackFormDetail({ params }) {
           </div>
         </div>
       </section>
+      {/* end of top section */}
+
+      {/* lower section */}
       <section className="mb-3 mt-3 py-3">
         <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
           <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
