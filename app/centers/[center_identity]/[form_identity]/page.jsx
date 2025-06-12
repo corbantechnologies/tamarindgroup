@@ -5,6 +5,7 @@ import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import { useFetchFeedbacksByFeedbackForm } from "@/hooks/feedbacks/actions";
 import Link from "next/link";
 import React, { use, useState, useMemo } from "react";
+import StarRating from "@/components/general/StarRating";
 
 function FeedbackFormDetail({ params }) {
   const { form_identity } = use(params);
@@ -115,29 +116,24 @@ function FeedbackFormDetail({ params }) {
             )}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3 py-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 py-2">
           <div className="md:border-r border-gray-300">
             <p className="font-semibold">Total Reviews</p>
             <h3 className="text-2xl font-bold">
               {feedbackForm?.total_submissions}
             </h3>
           </div>
+
           <div className="md:border-r border-gray-300">
-            <p className="font-semibold">Average Ratings</p>
+            <p className="font-semibold">Average Rating</p>
             <h3 className="text-2xl font-bold">
-              {feedbackForm?.total_submissions}
-            </h3>
-          </div>
-          <div className="md:border-r border-gray-300">
-            <p className="font-semibold">Total Questions</p>
-            <h3 className="text-2xl font-bold">
-              {feedbackForm?.questions?.length}
+              <StarRating rating={feedbackForm?.average_rating || 0} />
             </h3>
           </div>
           <div>
-            <p className="font-semibold">Average Rating</p>
+            <p className="font-semibold">Total Questions</p>
             <h3 className="text-2xl font-bold">
-              {feedbackForm?.average_rating}
+              {feedbackForm?.questions?.length}
             </h3>
           </div>
         </div>

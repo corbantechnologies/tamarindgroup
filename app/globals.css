@@ -78,3 +78,29 @@ body {
   background: var(--mainBlue);
   color: var(--foreground);
 }
+
+/* stars */
+.filled {
+  color: #f59e0b;
+  /* Tailwind's yellow-400 */
+}
+
+.half {
+  position: relative;
+  color: #f59e0b;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.half::before {
+  content: "★";
+  position: absolute;
+  width: 50%;
+  overflow: hidden;
+  color: #f59e0b;
+}
+
+.empty {
+  color: #d1d5db;
+  /* Tailwind's gray-300 */
+}
