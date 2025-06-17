@@ -40,9 +40,9 @@ function Directory() {
             .map((category) =>
               category.items.map((item) => (
                 <Link
-                  href={"/"}
+                  href={`/directory/${item.id}`}
                   key={item.id}
-                  className="bg-white shadow-md rounded-lg p-4 flex items-center cursor-pointer hover:bg-gray-50"
+                  className="bg-white shadow-md rounded-lg p-2 flex items-center cursor-pointer hover:bg-gray-50"
                 >
                   <div className="w-1/3">
                     <Image
