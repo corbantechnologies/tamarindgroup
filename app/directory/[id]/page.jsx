@@ -1,13 +1,8 @@
 "use client";
 import { msa_directory } from "@/data/directory-msa";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { use } from "react";
-import {
-  FaArrowAltCircleLeft,
-  FaArrowCircleLeft,
-  FaArrowLeft,
-} from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 
 function DirectoryDetail({ params }) {
   const { id } = use(params);
@@ -22,8 +17,6 @@ function DirectoryDetail({ params }) {
       break;
     }
   }
-
-  console.log(item);
 
   return (
     <>
