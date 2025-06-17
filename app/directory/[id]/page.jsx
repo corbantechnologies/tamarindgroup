@@ -1,9 +1,13 @@
 "use client";
 import { msa_directory } from "@/data/directory-msa";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { use } from "react";
+import { FaArrowLeft } from "react-icons/fa";
 
 function DirectoryDetail({ params }) {
   const { id } = use(params);
+  const router = useRouter();
 
   // Find the item in msa_directory by id
   let item = null;
@@ -17,7 +21,39 @@ function DirectoryDetail({ params }) {
 
   console.log(item);
 
-  return <div>DirectoryDetail</div>;
+  return (
+    <>
+      <div className="bg-white px-2 flex py-4 items-center justify-between">
+        <FaArrowLeft
+          className="cursor-pointer text-xl  "
+          onClick={() => router.back()}
+        />
+        <h2 className="flex-1 text-center font-bold text-2xl">{item.name}</h2>
+        <div className="w-4"></div>
+      </div>
+
+      <section
+        className="min-h-[40vh]"
+        style={{
+          backgroundImage: `url(${item.image})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      ></section>
+
+      <section>
+        <div className="container mx-auto p-4">
+          <div className="mb-3 px-4 py-6 rounded shadow bg-white border-gray-300">
+            <div className="mb-3 flex justify-between items-center border-b border-gray-300 pb-3">
+              <h6 className="text-xl font-semibold">Description</h6>
+            </div>
+            <p>{item.description}</p>
+          </div>
+        </div>
+      </section>
+    </>
+  );
 }
 
 export default DirectoryDetail;
