@@ -6,6 +6,7 @@ import { useFetchFeedbacksByFeedbackForm } from "@/hooks/feedbacks/actions";
 import Link from "next/link";
 import React, { use, useState, useMemo } from "react";
 import StarRating from "@/components/general/StarRating";
+import UpdateFeedbackForm from "@/forms/feedbackforms/UpdateFeedbackForm"; // Import the update form component
 
 function FeedbackFormDetail({ params }) {
   const { form_identity } = use(params);
@@ -29,7 +30,10 @@ function FeedbackFormDetail({ params }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false); // New state for update modal
   const itemsPerPage = 10;
+
+  console.log(feedbackForm)
 
   const filterFeedbacks = useMemo(() => {
     if (!allFeedbacks) return [];
@@ -98,6 +102,7 @@ function FeedbackFormDetail({ params }) {
               {feedbackForm?.title} Reviews
             </h2>
           </div>
+          {/* buttons */}
           <div className="flex gap-2">
             <button
               className="secondary-button px-3 py-1 rounded text-center leading-[1.5rem]"
@@ -114,7 +119,14 @@ function FeedbackFormDetail({ params }) {
                 Public Link
               </Link>
             )}
+            <button
+              className="secondary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+              onClick={() => setIsUpdateModalOpen(true)} // Trigger update modal
+            >
+              Update
+            </button>
           </div>
+          {/* end of buttons */}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 py-2">
           <div className="md:border-r border-gray-300">
@@ -123,7 +135,6 @@ function FeedbackFormDetail({ params }) {
               {feedbackForm?.total_submissions}
             </h3>
           </div>
-
           <div className="md:border-r border-gray-300">
             <p className="font-semibold">Average Rating</p>
             <h3 className="text-2xl font-bold">
@@ -318,6 +329,25 @@ function FeedbackFormDetail({ params }) {
               feedbackForm={feedbackForm}
               refetch={refetchFeedbackForm}
               closeModal={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {isUpdateModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsUpdateModalOpen(false)}
+            >
+              ✕
+            </button>
+            <UpdateFeedbackForm
+              refetch={refetchFeedbackForm}
+              closeModal={() => setIsUpdateModalOpen(false)}
+              center={feedbackForm?.center} // Pass the center data
+              feedbackForm={feedbackForm} // Pass the current feedback form data
             />
           </div>
         </div>

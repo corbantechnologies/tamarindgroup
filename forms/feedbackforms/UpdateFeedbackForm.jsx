@@ -1,13 +1,13 @@
 "use client";
 
 import useAxiosAuth from "@/hooks/general/useAxiosAuth";
-import { createFeedbackForm } from "@/services/feedbackforms";
+import { updateFeedbackForm } from "@/services/feedbackforms";
 import { Field, Form, Formik } from "formik";
 import Image from "next/image";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
-function CreateFeedbackForm({ refetch, closeModal, center }) {
+function UpdateFeedbackForm({ refetch, closeModal, center, feedbackForm }) {
   const [loading, setLoading] = useState(false);
   const axios = useAxiosAuth();
 
@@ -16,10 +16,10 @@ function CreateFeedbackForm({ refetch, closeModal, center }) {
       <Formik
         initialValues={{
           logo: null,
-          center: center?.name,
-          title: "",
-          description: "",
-          is_accomodation: false,
+          center: feedbackForm?.center,
+          title: feedbackForm?.title || "",
+          description: feedbackForm?.description || "",
+          is_accomodation: feedbackForm?.is_accomodation || false,
         }}
         onSubmit={async (values) => {
           setLoading(true);
@@ -33,8 +33,12 @@ function CreateFeedbackForm({ refetch, closeModal, center }) {
             formData.append("title", values?.title);
             formData.append("description", values?.description);
             formData.append("is_accomodation", values?.is_accomodation);
-            await createFeedbackForm(formData, axios);
-            toast?.success("Feedback form created successfully!");
+            await updateFeedbackForm(
+              formData,
+              axios,
+              feedbackForm?.form_identity
+            );
+            toast?.success("Feedback form updated successfully!");
             refetch();
             closeModal();
           } catch (error) {
@@ -125,7 +129,7 @@ function CreateFeedbackForm({ refetch, closeModal, center }) {
               }`}
               disabled={loading}
             >
-              {loading ? "Creating..." : "Create Feedback Form"}
+              {loading ? "Updating..." : "Update Feedback Form"}
             </button>
           </Form>
         )}
@@ -134,4 +138,4 @@ function CreateFeedbackForm({ refetch, closeModal, center }) {
   );
 }
 
-export default CreateFeedbackForm;
+export default UpdateFeedbackForm;
