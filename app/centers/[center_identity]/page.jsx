@@ -9,7 +9,6 @@ import React, { use, useState } from "react";
 function CenterDetail({ params }) {
   const { center_identity } = use(params);
 
-  console.log(center_identity);
 
   const {
     isLoading: isLoadingCenter,
