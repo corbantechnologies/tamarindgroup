@@ -129,7 +129,7 @@ function Feedback({ params }) {
       <div className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow ">
         <Image
           className="mx-auto"
-          src="/logo.png"
+          src={`${feedbackForm?.logo || "/logo.png"}`}
           alt="Tamarind Logo"
           width={100}
           height={100}
