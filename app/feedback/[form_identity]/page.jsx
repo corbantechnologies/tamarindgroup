@@ -5,7 +5,7 @@ import { createFeedback } from "@/services/feedbacks";
 import Image from "next/image";
 import React, { use, useState } from "react";
 import toast from "react-hot-toast";
-import RatingStars from "@/components/general/RatingStars"; // Import the new component
+import RatingButtons from "@/components/general/RatingButtons"; // Use the new component
 
 function Feedback({ params }) {
   const { form_identity } = use(params);
@@ -53,15 +53,14 @@ function Feedback({ params }) {
         } else {
           newAnswers.push({
             question: questionId,
-            [questionId === "rate-the-food" ? "sub_responses" : "rating"]:
-              value,
+            rating: value, // Set rating for the main question if applicable
             sub_responses: { [subQuestionId]: subResponse },
           });
         }
       } else {
         const answer = {
           question: questionId,
-          ...(value.rating ? { rating: value } : value),
+          rating: value, // Directly use the value as rating
         };
         if (existingAnswerIndex >= 0) {
           newAnswers[existingAnswerIndex] = answer;
@@ -83,7 +82,14 @@ function Feedback({ params }) {
     const submissionData = {
       feedback_form: formData.feedback_form,
       guest_name: formData.guest_name,
-      answers: formData.answers,
+      answers: formData.answers.map((answer) => ({
+        question: answer.question,
+        rating:
+          answer.rating ||
+          (answer.sub_responses
+            ? Object.values(answer.sub_responses)[0]?.rating
+            : null),
+      })),
     };
 
     if (feedbackForm?.is_accomodation) {
@@ -117,7 +123,7 @@ function Feedback({ params }) {
       refetchFeedbackForm();
     } catch (err) {
       setError(`Failed to submit feedback: ${err.message}`);
-      console.log(err)
+      console.log(err);
       toast.error(`Failed to submit feedback.`);
     } finally {
       setIsSubmitting(false);
@@ -205,7 +211,7 @@ function Feedback({ params }) {
                 {question.text}
               </label>
               {question.type === "RATING" && (
-                <RatingStars
+                <RatingButtons
                   value={
                     formData.answers.find(
                       (a) => a.question === question.identity
@@ -259,7 +265,7 @@ function Feedback({ params }) {
                       <label className="block text-sm font-medium text-gray-700">
                         {subQ.text}
                       </label>
-                      <RatingStars
+                      <RatingButtons
                         value={
                           formData.answers.find(
                             (a) => a.question === question.identity
