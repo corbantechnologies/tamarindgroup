@@ -23,7 +23,9 @@ const RatingButtons = ({ value, onChange, maxRating = 5 }) => {
   }, []);
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex space-x-4">
+      {" "}
+      {/* Changed from space-x-2 to space-x-4 */}
       {[...Array(maxRating)].map((_, index) => {
         const buttonValue = index + 1;
         const isSelected = buttonValue <= (hoverIndex || rating);
