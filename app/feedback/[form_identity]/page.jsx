@@ -5,6 +5,7 @@ import { createFeedback } from "@/services/feedbacks";
 import Image from "next/image";
 import React, { use, useState } from "react";
 import toast from "react-hot-toast";
+import RatingStars from "@/components/general/RatingStars"; // Import the new component
 
 function Feedback({ params }) {
   const { form_identity } = use(params);
@@ -40,7 +41,7 @@ function Feedback({ params }) {
       const newAnswers = [...prev.answers];
 
       if (subQuestionId) {
-        const subResponse = { question: subQuestionId, rating: value.rating };
+        const subResponse = { question: subQuestionId, rating: value };
         if (existingAnswerIndex >= 0) {
           newAnswers[existingAnswerIndex] = {
             ...newAnswers[existingAnswerIndex],
@@ -53,14 +54,14 @@ function Feedback({ params }) {
           newAnswers.push({
             question: questionId,
             [questionId === "rate-the-food" ? "sub_responses" : "rating"]:
-              value.rating,
+              value,
             sub_responses: { [subQuestionId]: subResponse },
           });
         }
       } else {
         const answer = {
           question: questionId,
-          ...(value.rating ? { rating: value.rating } : value),
+          ...(value.rating ? { rating: value } : value),
         };
         if (existingAnswerIndex >= 0) {
           newAnswers[existingAnswerIndex] = answer;
@@ -203,22 +204,15 @@ function Feedback({ params }) {
                 {question.text}
               </label>
               {question.type === "RATING" && (
-                <input
-                  type="number"
-                  min="1"
-                  max="5"
+                <RatingStars
                   value={
                     formData.answers.find(
                       (a) => a.question === question.identity
-                    )?.rating || ""
+                    )?.rating || 0
                   }
-                  onChange={(e) =>
-                    handleAnswerChange(question.identity, {
-                      rating: parseInt(e.target.value),
-                    })
+                  onChange={(rating) =>
+                    handleAnswerChange(question.identity, rating)
                   }
-                  className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Rate 1-5"
                 />
               )}
               {question.type === "YES_NO" && (
@@ -264,24 +258,19 @@ function Feedback({ params }) {
                       <label className="block text-sm font-medium text-gray-700">
                         {subQ.text}
                       </label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="5"
+                      <RatingStars
                         value={
                           formData.answers.find(
                             (a) => a.question === question.identity
-                          )?.sub_responses?.[subQ.identity]?.rating || ""
+                          )?.sub_responses?.[subQ.identity]?.rating || 0
                         }
-                        onChange={(e) =>
+                        onChange={(rating) =>
                           handleAnswerChange(
                             question.identity,
-                            { rating: parseInt(e.target.value) },
+                            rating,
                             subQ.identity
                           )
                         }
-                        className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Rate 1-5"
                       />
                     </div>
                   ))}
