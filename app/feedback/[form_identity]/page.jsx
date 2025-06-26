@@ -53,14 +53,14 @@ function Feedback({ params }) {
         } else {
           newAnswers.push({
             question: questionId,
-            rating: value, // Set rating for the main question if applicable
+            rating: value,
             sub_responses: { [subQuestionId]: subResponse },
           });
         }
       } else {
         const answer = {
           question: questionId,
-          rating: value, // Directly use the value as rating
+          rating: value,
         };
         if (existingAnswerIndex >= 0) {
           newAnswers[existingAnswerIndex] = answer;
@@ -78,7 +78,6 @@ function Feedback({ params }) {
     setIsSubmitting(true);
     setError(null);
 
-    // Create a copy of formData, excluding accommodation fields if not needed
     const submissionData = {
       feedback_form: formData.feedback_form,
       guest_name: formData.guest_name,
@@ -122,7 +121,8 @@ function Feedback({ params }) {
       });
       refetchFeedbackForm();
     } catch (err) {
-      // setError(`Failed to submit feedback: ${err.message}`);
+      setError(`Failed to submit feedback: ${err.message}`);
+      console.log(err);
       toast.error(`Failed to submit feedback.`);
     } finally {
       setIsSubmitting(false);
