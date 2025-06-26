@@ -117,6 +117,7 @@ function Feedback({ params }) {
       refetchFeedbackForm();
     } catch (err) {
       setError(`Failed to submit feedback: ${err.message}`);
+      console.log(err)
       toast.error(`Failed to submit feedback.`);
     } finally {
       setIsSubmitting(false);
