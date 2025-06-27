@@ -27,6 +27,23 @@ function Success() {
             enhance our services to better serve you and our community. Stay
             tuned for improvements, and feel free to share more anytime!
           </p>
+          <p className="mt-4 text-gray-500 text-sm">
+            If you have any further questions or need assistance, please contact
+            us at{" "}
+            <a
+              href="tel:+254725959552"
+              className="text-blue-500 hover:underline"
+            >
+              +254 725 959 552
+            </a>{" "}
+            or{" "}
+            <a
+              href="tel:+254722205160"
+              className="text-blue-500 hover:underline"
+            >
+              +254 722 205 160
+            </a>
+          </p>
         </div>
       </div>
     </div>
