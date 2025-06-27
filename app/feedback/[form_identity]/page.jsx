@@ -6,9 +6,11 @@ import Image from "next/image";
 import React, { use, useState } from "react";
 import toast from "react-hot-toast";
 import RatingButtons from "@/components/general/RatingButtons"; // Use the new component
+import { useRouter } from "next/navigation";
 
 function Feedback({ params }) {
   const { form_identity } = use(params);
+  const router = useRouter()
 
   const {
     isLoading: isLoadingFeedbackForm,
@@ -111,6 +113,7 @@ function Feedback({ params }) {
     try {
       await createFeedback(submissionData);
       toast.success("Feedback submitted successfully!");
+      router?.push("/success");
       setFormData({
         feedback_form: form_identity,
         guest_name: "",
