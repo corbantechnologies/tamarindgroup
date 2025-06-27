@@ -4,6 +4,7 @@ import Image from "next/image";
 import React from "react";
 import { FaExclamationTriangle } from "react-icons/fa"; // Icon for error
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 function Error() {
   const router = useRouter();
@@ -29,12 +30,18 @@ function Error() {
             We’re sorry, but an error occurred while processing your request.
             Please try again, or contact support if the issue persists.
           </p>
-          <button
+          <Link
+            href="/"
+            className="mt-6 inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+          >
+            Return to Homepage
+          </Link>
+          {/* <button
             onClick={() => router.push("/")}
             className="mt-6 inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
             Return to Homepage
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
