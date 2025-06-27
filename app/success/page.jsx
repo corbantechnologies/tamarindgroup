@@ -2,29 +2,30 @@
 
 import Image from "next/image";
 import React from "react";
-import { FaCheck } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa"; // Switched to FaCheckCircle for a more complete icon
 
 function Success() {
   return (
-    <div className="flex items-center justify-center min-h-screen px-4">
-      <div className="w-full max-w-md bg-white border border-gray-200 rounded-lg py-6">
+    <div className="flex items-center justify-center min-h-screen px-4 bg-gray-50">
+      <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-lg py-8 text-center">
         <Image
           className="mx-auto"
           src="/logo.png"
           alt="Tamarind Logo"
-          width={100}
-          height={100}
+          width={120}
+          height={120}
         />
 
-        <FaCheck className="text-green-500 text-6xl mx-auto mt-4" />
+        <FaCheckCircle className="text-green-500 text-7xl mx-auto mt-6 animate-pulse" />
 
-        <div className="mt-4 text-center px-6">
-          <h1 className="text-2xl font-bold">
-            Feedback Submitted Successfully
+        <div className="mt-6 px-6">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Thank You for Your Feedback!
           </h1>
-          <p className="mt-2">
-            Thank you for submitting your feedback. This helps us improve our
-            service delivery enabling us serve you better.
+          <p className="mt-4 text-gray-600 text-lg leading-relaxed">
+            We’re grateful for your valuable input. Your insights are helping us
+            enhance our services to better serve you and our community. Stay
+            tuned for improvements, and feel free to share more anytime!
           </p>
         </div>
       </div>
