@@ -4,13 +4,12 @@ import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import { createFeedback } from "@/services/feedbacks";
 import Image from "next/image";
 import React, { use, useState } from "react";
-import toast from "react-hot-toast";
 import RatingButtons from "@/components/general/RatingButtons"; // Use the new component
 import { useRouter } from "next/navigation";
 
 function Feedback({ params }) {
   const { form_identity } = use(params);
-  const router = useRouter()
+  const router = useRouter();
 
   const {
     isLoading: isLoadingFeedbackForm,
@@ -112,21 +111,10 @@ function Feedback({ params }) {
 
     try {
       await createFeedback(submissionData);
-      toast.success("Feedback submitted successfully!");
       router?.push("/success");
-      setFormData({
-        feedback_form: form_identity,
-        guest_name: "",
-        apartment_no: "",
-        arrival_date: "",
-        checkout_date: "",
-        answers: [],
-      });
-      refetchFeedbackForm();
     } catch (err) {
       setError(`Failed to submit feedback: ${err.message}`);
-      console.log(err);
-      toast.error(`Failed to submit feedback.`);
+      router?.push("/error");
     } finally {
       setIsSubmitting(false);
     }

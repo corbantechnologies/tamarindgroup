@@ -62,17 +62,17 @@ function Navbar({ center }) {
                 Dashboard
               </Link>
             </li>
-            <li
+            {/* <li
               className={`${
-                pathname === `/centers/${center?.center_identity}/forms`
+                pathname === `/centers/${center?.center_identity}`
                   ? "text-[var(--mainRed)]"
                   : "text-[var(--mainBlue)]"
               } hover:text-[var(--mainBlue)] transition-colors`}
             >
-              <Link href={`/centers/${center?.center_identity}/forms`}>
+              <Link href={`/centers/${center?.center_identity}`}>
                 Forms
               </Link>
-            </li>
+            </li> */}
           </ul>
         </div>
       </div>
