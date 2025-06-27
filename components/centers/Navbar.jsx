@@ -53,25 +53,21 @@ function Navbar({ center }) {
           <ul className="flex flex-col md:flex-row md:items-center gap-4">
             <li
               className={`${
+                pathname === `/admin/dashboard`
+                  ? "text-[var(--mainRed)]"
+                  : "text-[var(--mainBlue)]"
+              } hover:text-[var(--mainBlue)] transition-colors`}
+            >
+              <Link href={`/admin/dashboard`}>Centers</Link>
+            </li>
+            <li
+              className={`${
                 pathname === `/centers/${center?.center_identity}`
                   ? "text-[var(--mainRed)]"
                   : "text-[var(--mainBlue)]"
               } hover:text-[var(--mainBlue)] transition-colors`}
             >
-              <Link href={`/centers/${center?.center_identity}`}>
-                Dashboard
-              </Link>
-            </li>
-            <li
-              className={`${
-                pathname === `/centers/${center?.center_identity}/forms`
-                  ? "text-[var(--mainRed)]"
-                  : "text-[var(--mainBlue)]"
-              } hover:text-[var(--mainBlue)] transition-colors`}
-            >
-              <Link href={`/centers/${center?.center_identity}/forms`}>
-                Forms
-              </Link>
+              <Link href={`/centers/${center?.center_identity}`}>Forms</Link>
             </li>
           </ul>
         </div>

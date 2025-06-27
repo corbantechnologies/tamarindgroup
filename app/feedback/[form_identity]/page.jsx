@@ -4,10 +4,12 @@ import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import { createFeedback } from "@/services/feedbacks";
 import Image from "next/image";
 import React, { use, useState } from "react";
-import toast from "react-hot-toast";
+import RatingButtons from "@/components/general/RatingButtons"; // Use the new component
+import { useRouter } from "next/navigation";
 
 function Feedback({ params }) {
   const { form_identity } = use(params);
+  const router = useRouter();
 
   const {
     isLoading: isLoadingFeedbackForm,
@@ -40,7 +42,7 @@ function Feedback({ params }) {
       const newAnswers = [...prev.answers];
 
       if (subQuestionId) {
-        const subResponse = { question: subQuestionId, rating: value.rating };
+        const subResponse = { question: subQuestionId, rating: value };
         if (existingAnswerIndex >= 0) {
           newAnswers[existingAnswerIndex] = {
             ...newAnswers[existingAnswerIndex],
@@ -52,15 +54,14 @@ function Feedback({ params }) {
         } else {
           newAnswers.push({
             question: questionId,
-            [questionId === "rate-the-food" ? "sub_responses" : "rating"]:
-              value.rating,
+            rating: value,
             sub_responses: { [subQuestionId]: subResponse },
           });
         }
       } else {
         const answer = {
           question: questionId,
-          ...(value.rating ? { rating: value.rating } : value),
+          rating: value,
         };
         if (existingAnswerIndex >= 0) {
           newAnswers[existingAnswerIndex] = answer;
@@ -78,11 +79,17 @@ function Feedback({ params }) {
     setIsSubmitting(true);
     setError(null);
 
-    // Create a copy of formData, excluding accommodation fields if not needed
     const submissionData = {
       feedback_form: formData.feedback_form,
       guest_name: formData.guest_name,
-      answers: formData.answers,
+      answers: formData.answers.map((answer) => ({
+        question: answer.question,
+        rating:
+          answer.rating ||
+          (answer.sub_responses
+            ? Object.values(answer.sub_responses)[0]?.rating
+            : null),
+      })),
     };
 
     if (feedbackForm?.is_accomodation) {
@@ -104,19 +111,10 @@ function Feedback({ params }) {
 
     try {
       await createFeedback(submissionData);
-      toast.success("Feedback submitted successfully!");
-      setFormData({
-        feedback_form: form_identity,
-        guest_name: "",
-        apartment_no: "",
-        arrival_date: "",
-        checkout_date: "",
-        answers: [],
-      });
-      refetchFeedbackForm();
+      router?.push("/success");
     } catch (err) {
       setError(`Failed to submit feedback: ${err.message}`);
-      toast.error(`Failed to submit feedback.`);
+      router?.push("/error");
     } finally {
       setIsSubmitting(false);
     }
@@ -125,7 +123,7 @@ function Feedback({ params }) {
   if (isLoadingFeedbackForm) return <LoadingSpinner />;
 
   return (
-    <div className="flex items-center justify-center min-h-screen py-2">
+    <div className="flex items-center justify-center min-h-screen py-2 px-4">
       <div className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow ">
         <Image
           className="mx-auto"
@@ -203,22 +201,15 @@ function Feedback({ params }) {
                 {question.text}
               </label>
               {question.type === "RATING" && (
-                <input
-                  type="number"
-                  min="1"
-                  max="5"
+                <RatingButtons
                   value={
                     formData.answers.find(
                       (a) => a.question === question.identity
-                    )?.rating || ""
+                    )?.rating || 0
                   }
-                  onChange={(e) =>
-                    handleAnswerChange(question.identity, {
-                      rating: parseInt(e.target.value),
-                    })
+                  onChange={(rating) =>
+                    handleAnswerChange(question.identity, rating)
                   }
-                  className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Rate 1-5"
                 />
               )}
               {question.type === "YES_NO" && (
@@ -264,24 +255,19 @@ function Feedback({ params }) {
                       <label className="block text-sm font-medium text-gray-700">
                         {subQ.text}
                       </label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="5"
+                      <RatingButtons
                         value={
                           formData.answers.find(
                             (a) => a.question === question.identity
-                          )?.sub_responses?.[subQ.identity]?.rating || ""
+                          )?.sub_responses?.[subQ.identity]?.rating || 0
                         }
-                        onChange={(e) =>
+                        onChange={(rating) =>
                           handleAnswerChange(
                             question.identity,
-                            { rating: parseInt(e.target.value) },
+                            rating,
                             subQ.identity
                           )
                         }
-                        className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Rate 1-5"
                       />
                     </div>
                   ))}
