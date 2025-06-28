@@ -97,13 +97,71 @@ const msa_directory = [
     id: 300,
     name: "Other Services",
     icon: <FaPalette />,
-    items: [],
+    items: [
+      {
+        id: 301,
+        name: "Money Exchange",
+        subtitle: "Currency exchange services",
+        image: "/logo.png",
+        description:
+          "Currency exchange services are available at the reception desk. Please check current rates and service fees. We recommend exchanging currency during business hours for the best rates.",
+      },
+      {
+        id: 302,
+        name: "Laundry",
+        subtitle: "Complimentary laundry service",
+        image: "/logo.png",
+        description:
+          "We offer complimentary laundry services for your laundry needs. Please inform the reception at least 24 hours in advance to arrange this service.",
+      },
+      {
+        id: 303,
+        name: "Room Service",
+        subtitle: "In-room dining available",
+        image: "/logo.png",
+        description:
+          "Enjoy in-room dining with our room service menu. Available daily from 7:00 AM to 10:00 PM. Please call the reception to place your order.",
+      },
+      {
+        id: 304,
+        name: "Housekeeping",
+        subtitle: "Daily cleaning service",
+        image: "/logo.png",
+        description:
+          "Our housekeeping team provides daily cleaning services. If you require additional cleaning or have specific requests, please contact the reception.",
+      },
+    ],
   },
   {
     id: 400,
     name: "Special Moments",
     icon: <FaHeart />,
-    items: [],
+    items: [
+      {
+        id: 401,
+        name: "Bottle of cava or wine",
+        subtitle: "Uncork a magical evening",
+        image: "/logo.png",
+        description:
+          "Celebrate your special moments with a complimentary bottle of cava or wine. Please inform the reception at least 24 hours in advance to arrange this service.",
+      },
+      {
+        id: 402,
+        name: "Romantic dinner",
+        subtitle: "A candlelit dinner for two",
+        image: "/logo.png",
+        description:
+          "Indulge in a romantic dinner for two at our restaurant. Please make reservations at least 48 hours in advance to ensure availability and special arrangements.",
+      },
+      {
+        id: 403,
+        name: "Birthday cake",
+        subtitle: "Celebrate with a sweet treat",
+        image: "/logo.png",
+        description:
+          "Order a personalized birthday cake to celebrate your special day. Please notify the reception at least 72 hours in advance with your preferences.",
+      },
+    ],
   },
   {
     id: 500,
