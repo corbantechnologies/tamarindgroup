@@ -38,7 +38,7 @@ function DirectoryDetail({ params }) {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="px-3 text-white">
+        <div className="px-3 text-white h-full bg-black/50 flex items-center">
           <div className="max-w-2xl my-auto p-4">
             <h1 className="text-5xl font-bold mb-4">{item.name}</h1>
             <p className="mb-4">{item.subtitle}</p>
