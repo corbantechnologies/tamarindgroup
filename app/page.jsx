@@ -9,7 +9,7 @@ function LandingPage() {
     <>
       <Navbar />
       <section
-        className="relative min-h-[70vh] flex items-center justify-center bg-cover bg-center"
+        className="relative min-h-[50vh] flex items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/dhow.jpg')" }}
       >
         <div className="container mx-auto px-4 text-center text-white">

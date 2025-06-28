@@ -1,4 +1,10 @@
-import { FaInfoCircle } from "react-icons/fa";
+import {
+  FaHeart,
+  FaHotel,
+  FaInfoCircle,
+  FaPalette,
+  FaSwimmingPool,
+} from "react-icons/fa";
 
 const msa_directory = [
   {
@@ -43,7 +49,7 @@ const msa_directory = [
   {
     id: 200,
     name: "Hotel Benefits",
-    icon: <FaInfoCircle />,
+    icon: <FaHotel />,
     items: [
       {
         id: 201,
@@ -84,6 +90,41 @@ const msa_directory = [
         image: "/logo.png",
         description:
           "We accept major credit cards (Visa, MasterCard, Amex), mobile payments (M-Pesa), and cash in KES. All charges must be settled prior to check-out.",
+      },
+    ],
+  },
+  {
+    id: 300,
+    name: "Other Services",
+    icon: <FaPalette />,
+    items: [],
+  },
+  {
+    id: 400,
+    name: "Special Moments",
+    icon: <FaHeart />,
+    items: [],
+  },
+  {
+    id: 500,
+    name: "Swimming Pools",
+    icon: <FaSwimmingPool />,
+    items: [
+      {
+        id: 501,
+        name: "Towels service",
+        subtitle: "Complimentary towels at the pool",
+        image: "/logo.png",
+        description:
+          "Complimentary towels are available at the pool area. Please return used towels to the designated bins to help us maintain cleanliness and hygiene.",
+      },
+      {
+        id: 502,
+        name: "Sun loungers and parasols",
+        subtitle: "Relax in comfort",
+        image: "/logo.png",
+        description:
+          "Enjoy our sun loungers and parasols available around the pool area. Please reserve loungers responsibly and return them to their original position after use.",
       },
     ],
   },
