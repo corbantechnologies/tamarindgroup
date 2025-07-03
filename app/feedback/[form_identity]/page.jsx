@@ -119,13 +119,10 @@ function Feedback({ params }) {
       submissionData.checkout_date = formData.checkout_date;
     }
 
-    console.log("Submitting data:", submissionData); // Debug log
     try {
       await createFeedback(submissionData);
       router.push("/success");
     } catch (err) {
-      console.error("Submission error:", err);
-      setError(`Failed to submit feedback: ${err.message}`);
       router.push("/error");
     } finally {
       setIsSubmitting(false);
