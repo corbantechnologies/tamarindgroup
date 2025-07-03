@@ -61,7 +61,9 @@ function Feedback({ params }) {
       } else {
         const answer = {
           question: questionId,
-          rating: value,
+          ...(typeof value === "object" && value !== null
+            ? value
+            : { rating: value }), // Handle text or rating
         };
         if (existingAnswerIndex >= 0) {
           newAnswers[existingAnswerIndex] = answer;
@@ -82,14 +84,22 @@ function Feedback({ params }) {
     const submissionData = {
       feedback_form: formData.feedback_form,
       guest_name: formData.guest_name,
-      answers: formData.answers.map((answer) => ({
-        question: answer.question,
-        rating:
-          answer.rating ||
-          (answer.sub_responses
-            ? Object.values(answer.sub_responses)[0]?.rating
-            : null),
-      })),
+      answers: formData.answers.map((answer) => {
+        const mappedAnswer = { question: answer.question };
+        if (answer.rating !== undefined && answer.rating !== null) {
+          mappedAnswer.rating = answer.rating;
+        }
+        if (answer.yes_no !== undefined && answer.yes_no !== null) {
+          mappedAnswer.yes_no = answer.yes_no;
+        }
+        if (answer.text !== undefined && answer.text !== "") {
+          mappedAnswer.text = answer.text;
+        }
+        if (answer.sub_responses) {
+          mappedAnswer.sub_responses = answer.sub_responses;
+        }
+        return mappedAnswer;
+      }),
     };
 
     if (feedbackForm?.is_accomodation) {
@@ -109,12 +119,14 @@ function Feedback({ params }) {
       submissionData.checkout_date = formData.checkout_date;
     }
 
+    console.log("Submitting data:", submissionData); // Debug log
     try {
       await createFeedback(submissionData);
-      router?.push("/success");
+      router.push("/success");
     } catch (err) {
+      console.error("Submission error:", err);
       setError(`Failed to submit feedback: ${err.message}`);
-      router?.push("/error");
+      router.push("/error");
     } finally {
       setIsSubmitting(false);
     }
@@ -213,23 +225,46 @@ function Feedback({ params }) {
                 />
               )}
               {question.type === "YES_NO" && (
-                <select
-                  value={
-                    formData.answers.find(
-                      (a) => a.question === question.identity
-                    )?.yes_no || ""
-                  }
-                  onChange={(e) =>
-                    handleAnswerChange(question.identity, {
-                      yes_no: e.target.value === "true",
-                    })
-                  }
-                  className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select</option>
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
+                <div className="mt-2 flex space-x-6">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name={`yesno-${question.identity}`}
+                      value="true"
+                      checked={
+                        formData.answers.find(
+                          (a) => a.question === question.identity
+                        )?.yes_no === true
+                      }
+                      onChange={() =>
+                        handleAnswerChange(question.identity, {
+                          yes_no: true,
+                        })
+                      }
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Yes</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name={`yesno-${question.identity}`}
+                      value="false"
+                      checked={
+                        formData.answers.find(
+                          (a) => a.question === question.identity
+                        )?.yes_no === false
+                      }
+                      onChange={() =>
+                        handleAnswerChange(question.identity, {
+                          yes_no: false,
+                        })
+                      }
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">No</span>
+                  </label>
+                </div>
               )}
               {question.type === "TEXT" && (
                 <textarea
