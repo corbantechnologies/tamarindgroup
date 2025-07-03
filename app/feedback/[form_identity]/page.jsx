@@ -225,23 +225,46 @@ function Feedback({ params }) {
                 />
               )}
               {question.type === "YES_NO" && (
-                <select
-                  value={
-                    formData.answers.find(
-                      (a) => a.question === question.identity
-                    )?.yes_no || ""
-                  }
-                  onChange={(e) =>
-                    handleAnswerChange(question.identity, {
-                      yes_no: e.target.value === "true",
-                    })
-                  }
-                  className="mt-2 block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select</option>
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
+                <div className="mt-2 flex space-x-6">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name={`yesno-${question.identity}`}
+                      value="true"
+                      checked={
+                        formData.answers.find(
+                          (a) => a.question === question.identity
+                        )?.yes_no === true
+                      }
+                      onChange={() =>
+                        handleAnswerChange(question.identity, {
+                          yes_no: true,
+                        })
+                      }
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Yes</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name={`yesno-${question.identity}`}
+                      value="false"
+                      checked={
+                        formData.answers.find(
+                          (a) => a.question === question.identity
+                        )?.yes_no === false
+                      }
+                      onChange={() =>
+                        handleAnswerChange(question.identity, {
+                          yes_no: false,
+                        })
+                      }
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">No</span>
+                  </label>
+                </div>
               )}
               {question.type === "TEXT" && (
                 <textarea
