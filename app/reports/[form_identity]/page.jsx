@@ -2,7 +2,8 @@
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import Link from "next/link";
-import React, { use, useState, useMemo } from "react";
+import React, { use, useState, useMemo, useRef } from "react";
+import jsPDF from "jspdf";
 
 function ReportGenerator({ params }) {
   const { form_identity } = use(params);
@@ -18,6 +19,8 @@ function ReportGenerator({ params }) {
   const [specificDate, setSpecificDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  const canvasRef = useRef(null);
 
   const handleClearFilters = () => {
     setSpecificDate("");
@@ -87,6 +90,22 @@ function ReportGenerator({ params }) {
     };
   };
 
+  const generateDefaultQuestionReport = () => {
+    const questionAverages = {};
+    feedbackForm?.questions.forEach((question) => {
+      if (question.type === "RATING") {
+        const ratings = filterResponses
+          .filter((r) => r.question === question.identity && r.rating !== null)
+          .map((r) => r.rating);
+        questionAverages[question.identity] =
+          ratings.length > 0
+            ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+            : 0;
+      }
+    });
+    return questionAverages;
+  };
+
   const generateQuestionReport = () => {
     const question = feedbackForm?.questions.find(
       (q) => q.identity === selectedQuestion
@@ -119,14 +138,159 @@ function ReportGenerator({ params }) {
 
   const summaryReport =
     reportType === "summary" ? generateSummaryReport() : null;
+  const defaultQuestionReport =
+    reportType === "question-specific" && !selectedQuestion
+      ? generateDefaultQuestionReport()
+      : null;
   const questionReport =
-    reportType === "question-specific" ? generateQuestionReport() : null;
+    reportType === "question-specific" && selectedQuestion
+      ? generateQuestionReport()
+      : null;
+
+  const drawBarChart = (ratings) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const maxRating = 5;
+    const barWidth = 40;
+    const gap = 20;
+    const totalWidth = (barWidth + gap) * maxRating;
+    const height = 200;
+
+    canvas.width = totalWidth;
+    canvas.height = height;
+
+    const count = Array(maxRating).fill(0);
+    ratings.forEach((rating) => {
+      count[Math.floor(rating) - 1]++;
+    });
+
+    const maxCount = Math.max(...count);
+    ctx.fillStyle = "#3490dc";
+    count.forEach((c, i) => {
+      const heightScale = (c / maxCount) * (height - 40);
+      ctx.fillRect(
+        i * (barWidth + gap),
+        height - heightScale,
+        barWidth,
+        heightScale
+      );
+      ctx.fillStyle = "#000";
+      ctx.fillText(
+        c,
+        i * (barWidth + gap) + barWidth / 2,
+        height - heightScale - 5
+      );
+    });
+  };
+
+  const drawPieChart = (yesPercentage) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    canvas.width = 200;
+    canvas.height = 200;
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 80;
+
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.arc(centerX, centerY, radius, 0, (Math.PI * 2 * yesPercentage) / 100);
+    ctx.fillStyle = "#3490dc";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.arc(centerX, centerY, radius, (Math.PI * 2 * yesPercentage) / 100, 0);
+    ctx.fillStyle = "#e3342f";
+    ctx.fill();
+
+    ctx.fillStyle = "#000";
+    ctx.fillText(
+      `Yes: ${yesPercentage.toFixed(1)}%`,
+      centerX - 40,
+      centerY - 10
+    );
+    ctx.fillText(
+      `No: ${(100 - yesPercentage).toFixed(1)}%`,
+      centerX - 40,
+      centerY + 10
+    );
+  };
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(`Report for ${feedbackForm?.title}`, 10, 10);
+    doc.setFontSize(12);
+
+    let yOffset = 20;
+    if (reportType === "summary" && summaryReport) {
+      doc.text(
+        `Total Submissions: ${summaryReport.totalSubmissions}`,
+        10,
+        (yOffset += 10)
+      );
+      doc.text(
+        `Average Rating: ${summaryReport.averageRating.toFixed(1)}`,
+        10,
+        (yOffset += 10)
+      );
+      doc.text(
+        `Yes Percentage: ${summaryReport.yesPercentage.toFixed(1)}%`,
+        10,
+        (yOffset += 10)
+      );
+      doc.text(
+        `No Percentage: ${summaryReport.noPercentage.toFixed(1)}%`,
+        10,
+        (yOffset += 10)
+      );
+    } else if (reportType === "question-specific" && questionReport) {
+      const questionText = feedbackForm.questions.find(
+        (q) => q.identity === selectedQuestion
+      )?.text;
+      doc.text(`Report for ${questionText}`, 10, (yOffset += 10));
+      if (questionReport.averageRating !== undefined) {
+        doc.text(
+          `Average Rating: ${questionReport.averageRating.toFixed(1)}`,
+          10,
+          (yOffset += 10)
+        );
+      }
+      if (questionReport.yesPercentage !== undefined) {
+        doc.text(
+          `Yes Percentage: ${questionReport.yesPercentage.toFixed(1)}%`,
+          10,
+          (yOffset += 10)
+        );
+        doc.text(
+          `No Percentage: ${questionReport.noPercentage.toFixed(1)}%`,
+          10,
+          (yOffset += 10)
+        );
+      }
+      if (questionReport.texts) {
+        questionReport.texts.forEach((text, index) => {
+          doc.text(`Comment ${index + 1}: ${text}`, 10, (yOffset += 10));
+        });
+      }
+    }
+
+    doc.save(`report_${form_identity}.pdf`);
+  };
 
   if (isLoadingFeedbackForm) return <LoadingSpinner />;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-6 px-4 bg-gray-50">
-      <div className="w-full max-w-4xl p-6 bg-white border border-gray-200 rounded-lg shadow-lg">
+      <div className="w-full p-6 bg-white border border-gray-200 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">
           Report for {feedbackForm?.title}
         </h2>
@@ -188,7 +352,7 @@ function ReportGenerator({ params }) {
                 onChange={(e) => setSelectedQuestion(e.target.value)}
                 className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select a Question</option>
+                <option value="">All Questions</option>
                 {feedbackForm?.questions.map((q) => (
                   <option key={q.identity} value={q.identity}>
                     {q.text}
@@ -198,7 +362,7 @@ function ReportGenerator({ params }) {
             )}
             <button
               onClick={handleClearFilters}
-              className="primary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+              className="primary-button px-3 py-1 rounded text-center"
             >
               Clear
             </button>
@@ -217,81 +381,99 @@ function ReportGenerator({ params }) {
               <p>No Percentage: {summaryReport.noPercentage.toFixed(1)}%</p>
               <p>Rating Responses: {summaryReport.ratingCount}</p>
               <p>Yes/No Responses: {summaryReport.yesNoCount}</p>
+              <div className="mt-4">
+                <h4 className="text-lg font-medium">Yes/No Distribution</h4>
+                <canvas ref={canvasRef} className="border" />
+                {drawPieChart(summaryReport.yesPercentage)}
+              </div>
             </div>
           )}
-          {reportType === "question-specific" &&
-            questionReport &&
-            selectedQuestion && (
-              <div>
-                <h3 className="text-xl font-semibold mb-2">
-                  Report for{" "}
-                  {
-                    feedbackForm.questions.find(
-                      (q) => q.identity === selectedQuestion
-                    )?.text
-                  }
-                </h3>
-                {questionReport.averageRating !== undefined && (
-                  <p>
-                    Average Rating: {questionReport.averageRating.toFixed(1)}
-                  </p>
-                )}
-                {questionReport.yesPercentage !== undefined && (
-                  <p>
-                    Yes Percentage: {questionReport.yesPercentage.toFixed(1)}%
-                  </p>
-                )}
-                {questionReport.noPercentage !== undefined && (
-                  <p>
-                    No Percentage: {questionReport.noPercentage.toFixed(1)}%
-                  </p>
-                )}
-                {questionReport.texts && questionReport.texts.length > 0 && (
-                  <div>
-                    <p>Sample Comments:</p>
-                    <ul>
-                      {questionReport.texts.map((text, index) => (
-                        <li key={index} className="ml-4">
-                          {text}
+          {reportType === "question-specific" && (
+            <div>
+              {!selectedQuestion && defaultQuestionReport && (
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">
+                    Average Ratings by Question
+                  </h3>
+                  <ul>
+                    {Object.entries(defaultQuestionReport).map(([id, avg]) => {
+                      const question = feedbackForm.questions.find(
+                        (q) => q.identity === id
+                      );
+                      return (
+                        <li key={id} className="mb-2">
+                          {question?.text}: {avg.toFixed(1)}
                         </li>
-                      ))}
-                    </ul>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+              {selectedQuestion && questionReport && (
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">
+                    Report for{" "}
+                    {
+                      feedbackForm.questions.find(
+                        (q) => q.identity === selectedQuestion
+                      )?.text
+                    }
+                  </h3>
+                  {questionReport.averageRating !== undefined && (
+                    <p>
+                      Average Rating: {questionReport.averageRating.toFixed(1)}
+                    </p>
+                  )}
+                  {questionReport.yesPercentage !== undefined && (
+                    <p>
+                      Yes Percentage: {questionReport.yesPercentage.toFixed(1)}%
+                    </p>
+                  )}
+                  {questionReport.noPercentage !== undefined && (
+                    <p>
+                      No Percentage: {questionReport.noPercentage.toFixed(1)}%
+                    </p>
+                  )}
+                  {questionReport.texts && questionReport.texts.length > 0 && (
+                    <div>
+                      <p>Sample Comments:</p>
+                      <ul>
+                        {questionReport.texts.map((text, index) => (
+                          <li key={index} className="ml-4">
+                            {text}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <div className="mt-4">
+                    {questionReport.ratings && (
+                      <div>
+                        <h4 className="text-lg font-medium">
+                          Rating Distribution
+                        </h4>
+                        <canvas ref={canvasRef} className="border" />
+                        {drawBarChart(questionReport.ratings)}
+                      </div>
+                    )}
+                    {questionReport.yesPercentage !== undefined && (
+                      <div>
+                        <h4 className="text-lg font-medium">
+                          Yes/No Distribution
+                        </h4>
+                        <canvas ref={canvasRef} className="border" />
+                        {drawPieChart(questionReport.yesPercentage)}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
-          {/* Placeholder for charts - to be implemented */}
-          <div className="mt-4">
-            {reportType === "summary" && (
-              <div>
-                <h4 className="text-lg font-medium">Yes/No Distribution</h4>
-                {/* Pie chart placeholder */}
-                <div>Chart will appear here</div>
-              </div>
-            )}
-            {reportType === "question-specific" && questionReport && (
-              <div>
-                {questionReport.ratings && (
-                  <div>
-                    <h4 className="text-lg font-medium">Rating Distribution</h4>
-                    {/* Bar chart placeholder */}
-                    <div>Chart will appear here</div>
-                  </div>
-                )}
-                {questionReport.yesPercentage !== undefined && (
-                  <div>
-                    <h4 className="text-lg font-medium">Yes/No Distribution</h4>
-                    {/* Pie chart placeholder */}
-                    <div>Chart will appear here</div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <button
           className="primary-button px-4 py-2 rounded text-center leading-[1.5rem]"
-          onClick={() => alert("PDF download to be implemented")}
+          onClick={downloadPDF}
         >
           Download PDF
         </button>
