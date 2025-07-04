@@ -125,6 +125,13 @@ function FeedbackFormDetail({ params }) {
             >
               Update
             </button>
+            <Link
+              href={`/reports/${feedbackForm?.form_identity}`}
+              target="_blank"
+              className="primary-button px-3 py-1 rounded text-center leading-[1.5rem]"
+            >
+              Generate Report
+            </Link>
           </div>
           {/* end of buttons */}
         </div>

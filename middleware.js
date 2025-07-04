@@ -6,5 +6,6 @@ export const config = {
     "/kitchen/:path*",
     "/(private)/:path*",
     "/centers/:path*",
+    "/reports/:path*",
   ],
 };
