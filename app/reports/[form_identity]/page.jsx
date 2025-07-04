@@ -12,7 +12,6 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
-// import autoTable from "jspdf-autotable";
 
 function ReportGenerator({ params }) {
   const { form_identity } = use(params);
@@ -98,19 +97,37 @@ function ReportGenerator({ params }) {
   };
 
   const generateDefaultQuestionReport = () => {
-    const questionAverages = {};
+    const questionStats = {};
     feedbackForm?.questions.forEach((question) => {
       if (question.type === "RATING") {
         const ratings = filterResponses
           .filter((r) => r.question === question.identity && r.rating !== null)
           .map((r) => r.rating);
-        questionAverages[question.identity] =
-          ratings.length > 0
-            ? ratings.reduce((a, b) => a + b, 0) / ratings.length
-            : 0;
+        questionStats[question.identity] = {
+          type: "RATING",
+          average:
+            ratings.length > 0
+              ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+              : 0,
+        };
+      } else if (question.type === "YES_NO") {
+        const yesNo = filterResponses
+          .filter((r) => r.question === question.identity && r.yes_no !== null)
+          .map((r) => r.yes_no);
+        const yesCount = yesNo.filter((v) => v).length;
+        const noCount = yesNo.filter((v) => !v).length;
+        const yesPercentage =
+          yesNo.length > 0 ? (yesCount / yesNo.length) * 100 : 0;
+        const noPercentage =
+          yesNo.length > 0 ? (noCount / yesNo.length) * 100 : 0;
+        questionStats[question.identity] = {
+          type: "YES_NO",
+          yesPercentage,
+          noPercentage,
+        };
       }
     });
-    return questionAverages;
+    return questionStats;
   };
 
   const generateQuestionReport = () => {
@@ -354,20 +371,50 @@ function ReportGenerator({ params }) {
               {!selectedQuestion && defaultQuestionReport && (
                 <div>
                   <h3 className="text-xl font-semibold mb-2">
-                    Average Ratings by Question
+                    Overview by Question
                   </h3>
-                  <ul>
-                    {Object.entries(defaultQuestionReport).map(([id, avg]) => {
-                      const question = feedbackForm.questions.find(
-                        (q) => q.identity === id
-                      );
-                      return (
-                        <li key={id} className="mb-2">
-                          {question?.text}: {avg.toFixed(1)}
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  {Object.entries(defaultQuestionReport).map(([id, stats]) => {
+                    const question = feedbackForm.questions.find(
+                      (q) => q.identity === id
+                    );
+                    return (
+                      <div key={id} className="mb-6">
+                        <h4 className="text-lg font-medium">
+                          {question?.text}
+                        </h4>
+                        {stats.type === "RATING" && (
+                          <p>Average Rating: {stats.average.toFixed(1)}</p>
+                        )}
+                        {stats.type === "YES_NO" && (
+                          <div className="mt-4 h-64">
+                            <h5 className="text-md font-medium">
+                              Yes/No Distribution
+                            </h5>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={[
+                                    { name: "Yes", value: stats.yesPercentage },
+                                    { name: "No", value: stats.noPercentage },
+                                  ]}
+                                  dataKey="value"
+                                  nameKey="name"
+                                  cx="50%"
+                                  cy="50%"
+                                  outerRadius={80}
+                                  label
+                                >
+                                  {COLORS.map((color, index) => (
+                                    <Cell key={`cell-${index}`} fill={color} />
+                                  ))}
+                                </Pie>
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
               {selectedQuestion && questionReport && (
