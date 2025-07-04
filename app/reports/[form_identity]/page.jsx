@@ -2,8 +2,17 @@
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import Link from "next/link";
-import React, { use, useState, useMemo, useRef } from "react";
+import React, { use, useState, useMemo } from "react";
 import jsPDF from "jspdf";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+} from "recharts";
+// import autoTable from "jspdf-autotable";
 
 function ReportGenerator({ params }) {
   const { form_identity } = use(params);
@@ -19,8 +28,6 @@ function ReportGenerator({ params }) {
   const [specificDate, setSpecificDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
-  const canvasRef = useRef(null);
 
   const handleClearFilters = () => {
     setSpecificDate("");
@@ -147,140 +154,76 @@ function ReportGenerator({ params }) {
       ? generateQuestionReport()
       : null;
 
-  const drawBarChart = (ratings) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const maxRating = 5;
-    const barWidth = 40;
-    const gap = 20;
-    const totalWidth = (barWidth + gap) * maxRating;
-    const height = 200;
-
-    canvas.width = totalWidth;
-    canvas.height = height;
-
-    const count = Array(maxRating).fill(0);
-    ratings.forEach((rating) => {
-      count[Math.floor(rating) - 1]++;
-    });
-
-    const maxCount = Math.max(...count);
-    ctx.fillStyle = "#3490dc";
-    count.forEach((c, i) => {
-      const heightScale = (c / maxCount) * (height - 40);
-      ctx.fillRect(
-        i * (barWidth + gap),
-        height - heightScale,
-        barWidth,
-        heightScale
-      );
-      ctx.fillStyle = "#000";
-      ctx.fillText(
-        c,
-        i * (barWidth + gap) + barWidth / 2,
-        height - heightScale - 5
-      );
-    });
-  };
-
-  const drawPieChart = (yesPercentage) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    canvas.width = 200;
-    canvas.height = 200;
-
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = 80;
-
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.arc(centerX, centerY, radius, 0, (Math.PI * 2 * yesPercentage) / 100);
-    ctx.fillStyle = "#3490dc";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.arc(centerX, centerY, radius, (Math.PI * 2 * yesPercentage) / 100, 0);
-    ctx.fillStyle = "#e3342f";
-    ctx.fill();
-
-    ctx.fillStyle = "#000";
-    ctx.fillText(
-      `Yes: ${yesPercentage.toFixed(1)}%`,
-      centerX - 40,
-      centerY - 10
-    );
-    ctx.fillText(
-      `No: ${(100 - yesPercentage).toFixed(1)}%`,
-      centerX - 40,
-      centerY + 10
-    );
-  };
+  const COLORS = ["#3490dc", "#e3342f"];
 
   const downloadPDF = () => {
     const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text(`Report for ${feedbackForm?.title}`, 10, 10);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 128); // Dark blue header
+    doc.text(`Feedback Report: ${feedbackForm?.title}`, 105, 20, {
+      align: "center",
+    });
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // Black for body
+    doc.setFillColor(245, 245, 245); // Lighter gray background
+    doc.rect(10, 30, 190, 260, "F");
 
-    let yOffset = 20;
+    let yOffset = 40;
     if (reportType === "summary" && summaryReport) {
-      doc.text(
-        `Total Submissions: ${summaryReport.totalSubmissions}`,
-        10,
-        (yOffset += 10)
-      );
-      doc.text(
-        `Average Rating: ${summaryReport.averageRating.toFixed(1)}`,
-        10,
-        (yOffset += 10)
-      );
-      doc.text(
-        `Yes Percentage: ${summaryReport.yesPercentage.toFixed(1)}%`,
-        10,
-        (yOffset += 10)
-      );
-      doc.text(
-        `No Percentage: ${summaryReport.noPercentage.toFixed(1)}%`,
-        10,
-        (yOffset += 10)
-      );
+      doc.autoTable({
+        startY: yOffset,
+        head: [["Metric", "Value"]],
+        body: [
+          ["Total Submissions", summaryReport.totalSubmissions],
+          ["Average Rating", `${summaryReport.averageRating.toFixed(1)}`],
+          ["Yes Percentage", `${summaryReport.yesPercentage.toFixed(1)}%`],
+          ["No Percentage", `${summaryReport.noPercentage.toFixed(1)}%`],
+          ["Rating Responses", summaryReport.ratingCount],
+          ["Yes/No Responses", summaryReport.yesNoCount],
+        ],
+        theme: "grid",
+        styles: { cellPadding: 2, fontSize: 10, halign: "left" },
+        headStyles: { fillColor: [0, 0, 128], textColor: [255, 255, 255] },
+      });
+      yOffset = doc.lastAutoTable.finalY + 10;
     } else if (reportType === "question-specific" && questionReport) {
       const questionText = feedbackForm.questions.find(
         (q) => q.identity === selectedQuestion
       )?.text;
-      doc.text(`Report for ${questionText}`, 10, (yOffset += 10));
+      doc.text(`Report for: ${questionText}`, 20, (yOffset += 10));
+      let body = [];
       if (questionReport.averageRating !== undefined) {
-        doc.text(
-          `Average Rating: ${questionReport.averageRating.toFixed(1)}`,
-          10,
-          (yOffset += 10)
-        );
+        body.push([
+          "Average Rating",
+          `${questionReport.averageRating.toFixed(1)}`,
+        ]);
       }
       if (questionReport.yesPercentage !== undefined) {
-        doc.text(
-          `Yes Percentage: ${questionReport.yesPercentage.toFixed(1)}%`,
-          10,
-          (yOffset += 10)
-        );
-        doc.text(
-          `No Percentage: ${questionReport.noPercentage.toFixed(1)}%`,
-          10,
-          (yOffset += 10)
-        );
+        body.push([
+          "Yes Percentage",
+          `${questionReport.yesPercentage.toFixed(1)}%`,
+        ]);
+        body.push([
+          "No Percentage",
+          `${questionReport.noPercentage.toFixed(1)}%`,
+        ]);
       }
       if (questionReport.texts) {
         questionReport.texts.forEach((text, index) => {
-          doc.text(`Comment ${index + 1}: ${text}`, 10, (yOffset += 10));
+          body.push([`Comment ${index + 1}`, text]);
         });
       }
+      doc.autoTable({
+        startY: yOffset,
+        head: [["Metric", "Value"]],
+        body: body,
+        theme: "grid",
+        styles: { cellPadding: 2, fontSize: 10, halign: "left" },
+        headStyles: { fillColor: [0, 0, 128], textColor: [255, 255, 255] },
+      });
+      yOffset = doc.lastAutoTable.finalY + 10;
     }
 
     doc.save(`report_${form_identity}.pdf`);
@@ -290,7 +233,7 @@ function ReportGenerator({ params }) {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-6 px-4 bg-gray-50">
-      <div className="w-full p-6 bg-white border border-gray-200 rounded-lg shadow-lg">
+      <div className="w-full max-w-4xl p-6 bg-white border border-gray-200 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">
           Report for {feedbackForm?.title}
         </h2>
@@ -381,10 +324,28 @@ function ReportGenerator({ params }) {
               <p>No Percentage: {summaryReport.noPercentage.toFixed(1)}%</p>
               <p>Rating Responses: {summaryReport.ratingCount}</p>
               <p>Yes/No Responses: {summaryReport.yesNoCount}</p>
-              <div className="mt-4">
+              <div className="mt-4 h-64">
                 <h4 className="text-lg font-medium">Yes/No Distribution</h4>
-                <canvas ref={canvasRef} className="border" />
-                {drawPieChart(summaryReport.yesPercentage)}
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Yes", value: summaryReport.yesPercentage },
+                        { name: "No", value: summaryReport.noPercentage },
+                      ]}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label
+                    >
+                      {COLORS.map((color, index) => (
+                        <Cell key={`cell-${index}`} fill={color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
           )}
@@ -452,8 +413,23 @@ function ReportGenerator({ params }) {
                         <h4 className="text-lg font-medium">
                           Rating Distribution
                         </h4>
-                        <canvas ref={canvasRef} className="border" />
-                        {drawBarChart(questionReport.ratings)}
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={Array.from({ length: 5 }, (_, i) => {
+                                const rating = i + 1;
+                                return {
+                                  name: rating.toString(),
+                                  value: questionReport.ratings.filter(
+                                    (r) => Math.floor(r) === rating
+                                  ).length,
+                                };
+                              })}
+                            >
+                              <Bar dataKey="value" fill="#3490dc" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     )}
                     {questionReport.yesPercentage !== undefined && (
@@ -461,8 +437,34 @@ function ReportGenerator({ params }) {
                         <h4 className="text-lg font-medium">
                           Yes/No Distribution
                         </h4>
-                        <canvas ref={canvasRef} className="border" />
-                        {drawPieChart(questionReport.yesPercentage)}
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={[
+                                  {
+                                    name: "Yes",
+                                    value: questionReport.yesPercentage,
+                                  },
+                                  {
+                                    name: "No",
+                                    value: questionReport.noPercentage,
+                                  },
+                                ]}
+                                dataKey="value"
+                                nameKey="name"
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={80}
+                                label
+                              >
+                                {COLORS.map((color, index) => (
+                                  <Cell key={`cell-${index}`} fill={color} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     )}
                   </div>
