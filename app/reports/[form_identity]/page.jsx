@@ -138,14 +138,18 @@ function ReportGenerator({ params }) {
 
     const responses = filterResponses;
     if (question.type === "RATING") {
-      const ratings = responses.map((r) => r.rating).filter((r) => r !== null);
+      const ratings = responses
+        .filter((r) => r.question === selectedQuestion && r.rating !== null)
+        .map((r) => r.rating);
       const averageRating =
         ratings.length > 0
           ? ratings.reduce((a, b) => a + b, 0) / ratings.length
           : 0;
       return { averageRating, ratings };
     } else if (question.type === "YES_NO") {
-      const yesNo = responses.map((r) => r.yes_no).filter((r) => r !== null);
+      const yesNo = responses
+        .filter((r) => r.question === selectedQuestion && r.yes_no !== null)
+        .map((r) => r.yes_no);
       const yesCount = yesNo.filter((v) => v).length;
       const noCount = yesNo.filter((v) => !v).length;
       const yesPercentage =
@@ -154,7 +158,10 @@ function ReportGenerator({ params }) {
         yesNo.length > 0 ? (noCount / yesNo.length) * 100 : 0;
       return { yesPercentage, noPercentage };
     } else if (question.type === "TEXT") {
-      const texts = responses.map((r) => r.text).filter((t) => t);
+      const texts = responses
+        .filter((r) => r.question === selectedQuestion)
+        .map((r) => r.text)
+        .filter((t) => t);
       return { texts };
     }
     return null;
@@ -250,7 +257,7 @@ function ReportGenerator({ params }) {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-6 px-4 bg-gray-50">
-      <div className="w-full max-w-4xl p-6 bg-white border border-gray-200 rounded-lg shadow-lg">
+      <div className="w-full p-6 bg-white border border-gray-200 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">
           Report for {feedbackForm?.title}
         </h2>
