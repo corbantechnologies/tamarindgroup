@@ -2,8 +2,10 @@
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchFeedbackForm } from "@/hooks/feedbackforms/actions";
 import Link from "next/link";
-import React, { use, useState, useMemo } from "react";
+import React, { use, useState, useMemo, useRef } from "react";
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 import {
   BarChart,
   Bar,
@@ -179,8 +181,10 @@ function ReportGenerator({ params }) {
       : null;
 
   const COLORS = ["#3490dc", "#e3342f"];
+  const pieChartRef = useRef(null);
+  const barChartRef = useRef(null);
 
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
@@ -196,7 +200,7 @@ function ReportGenerator({ params }) {
 
     let yOffset = 40;
     if (reportType === "summary" && summaryReport) {
-      doc.autoTable({
+      autoTable(doc, {
         startY: yOffset,
         head: [["Metric", "Value"]],
         body: [
@@ -234,12 +238,15 @@ function ReportGenerator({ params }) {
           `${questionReport.noPercentage.toFixed(1)}%`,
         ]);
       }
-      if (questionReport.texts) {
+      if (questionReport.texts && questionReport.texts.length > 0) {
+        body.push(["Comments", ""]); // Placeholder to ensure table renders
         questionReport.texts.forEach((text, index) => {
           body.push([`Comment ${index + 1}`, text]);
         });
+      } else {
+        body.push(["No Data", ""]); // Fallback to avoid empty table
       }
-      doc.autoTable({
+      autoTable(doc, {
         startY: yOffset,
         head: [["Metric", "Value"]],
         body: body,
@@ -248,6 +255,28 @@ function ReportGenerator({ params }) {
         headStyles: { fillColor: [0, 0, 128], textColor: [255, 255, 255] },
       });
       yOffset = doc.lastAutoTable.finalY + 10;
+
+      // Capture and add pie chart if it exists
+      if (questionReport.yesPercentage !== undefined && pieChartRef.current) {
+        const pieCanvas = await html2canvas(pieChartRef.current);
+        const imgData = pieCanvas.toDataURL("image/png");
+        const imgWidth = 190;
+        const imgHeight = (pieCanvas.height * imgWidth) / pieCanvas.width;
+        doc.addPage();
+        doc.addImage(imgData, "PNG", 10, 20, imgWidth, imgHeight);
+        yOffset = imgHeight + 30;
+      }
+
+      // Capture and add bar chart if it exists
+      if (questionReport.ratings && barChartRef.current) {
+        const barCanvas = await html2canvas(barChartRef.current);
+        const imgData = barCanvas.toDataURL("image/png");
+        const imgWidth = 190;
+        const imgHeight = (barCanvas.height * imgWidth) / barCanvas.width;
+        doc.addPage();
+        doc.addImage(imgData, "PNG", 10, 20, imgWidth, imgHeight);
+        yOffset = imgHeight + 30;
+      }
     }
 
     doc.save(`report_${form_identity}.pdf`);
@@ -463,7 +492,7 @@ function ReportGenerator({ params }) {
                   )}
                   <div className="mt-4">
                     {questionReport.ratings && (
-                      <div>
+                      <div ref={barChartRef}>
                         <h4 className="text-lg font-medium">
                           Rating Distribution
                         </h4>
@@ -487,7 +516,7 @@ function ReportGenerator({ params }) {
                       </div>
                     )}
                     {questionReport.yesPercentage !== undefined && (
-                      <div>
+                      <div ref={pieChartRef}>
                         <h4 className="text-lg font-medium">
                           Yes/No Distribution
                         </h4>
