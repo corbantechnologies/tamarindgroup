@@ -111,6 +111,7 @@ function ReportGenerator({ params }) {
             ratings.length > 0
               ? ratings.reduce((a, b) => a + b, 0) / ratings.length
               : 0,
+          ratings: ratings, // Store individual ratings for PDF table
         };
       } else if (question.type === "YES_NO") {
         const yesNo = filterResponses
@@ -216,66 +217,94 @@ function ReportGenerator({ params }) {
         headStyles: { fillColor: [0, 0, 128], textColor: [255, 255, 255] },
       });
       yOffset = doc.lastAutoTable.finalY + 10;
-    } else if (reportType === "question-specific" && questionReport) {
-      const questionText = feedbackForm.questions.find(
-        (q) => q.identity === selectedQuestion
-      )?.text;
-      doc.text(`Report for: ${questionText}`, 20, (yOffset += 10));
-      let body = [];
-      if (questionReport.averageRating !== undefined) {
-        body.push([
-          "Average Rating",
-          `${questionReport.averageRating.toFixed(1)}`,
-        ]);
-      }
-      if (questionReport.yesPercentage !== undefined) {
-        body.push([
-          "Yes Percentage",
-          `${questionReport.yesPercentage.toFixed(1)}%`,
-        ]);
-        body.push([
-          "No Percentage",
-          `${questionReport.noPercentage.toFixed(1)}%`,
-        ]);
-      }
-      if (questionReport.texts && questionReport.texts.length > 0) {
-        body.push(["Comments", ""]); // Placeholder to ensure table renders
-        questionReport.texts.forEach((text, index) => {
-          body.push([`Comment ${index + 1}`, text]);
+    } else if (reportType === "question-specific") {
+      if (!selectedQuestion && defaultQuestionReport) {
+        doc.text("Ratings for All Questions", 20, (yOffset += 10));
+        const body = feedbackForm.questions
+          .filter((q) => defaultQuestionReport[q.identity]?.type === "RATING")
+          .map((q) => [
+            q.text,
+            defaultQuestionReport[q.identity]?.average?.toFixed(1) || "N/A",
+          ]);
+        autoTable(doc, {
+          startY: yOffset,
+          head: [["Question", "Average Rating"]],
+          body: body,
+          theme: "grid",
+          styles: { cellPadding: 2, fontSize: 10, halign: "left" },
+          headStyles: { fillColor: [0, 0, 128], textColor: [255, 255, 255] },
         });
-      } else {
-        body.push(["No Data", ""]); // Fallback to avoid empty table
-      }
-      autoTable(doc, {
-        startY: yOffset,
-        head: [["Metric", "Value"]],
-        body: body,
-        theme: "grid",
-        styles: { cellPadding: 2, fontSize: 10, halign: "left" },
-        headStyles: { fillColor: [0, 0, 128], textColor: [255, 255, 255] },
-      });
-      yOffset = doc.lastAutoTable.finalY + 10;
+        yOffset = doc.lastAutoTable.finalY + 10;
+      } else if (questionReport) {
+        const questionText = feedbackForm.questions.find(
+          (q) => q.identity === selectedQuestion
+        )?.text;
+        doc.text(`Report for: ${questionText}`, 20, (yOffset += 10));
+        let body = [];
+        if (questionReport.averageRating !== undefined) {
+          body.push([
+            "Average Rating",
+            `${questionReport.averageRating.toFixed(1)}`,
+          ]);
+        }
+        if (questionReport.yesPercentage !== undefined) {
+          body.push([
+            "Yes Percentage",
+            `${questionReport.yesPercentage.toFixed(1)}%`,
+          ]);
+          body.push([
+            "No Percentage",
+            `${questionReport.noPercentage.toFixed(1)}%`,
+          ]);
+        }
+        if (questionReport.texts && questionReport.texts.length > 0) {
+          body.push(["Comments", ""]); // Placeholder to ensure table renders
+          questionReport.texts.forEach((text, index) => {
+            body.push([`Comment ${index + 1}`, text]);
+          });
+        } else {
+          body.push(["No Data", ""]); // Fallback to avoid empty table
+        }
+        autoTable(doc, {
+          startY: yOffset,
+          head: [["Metric", "Value"]],
+          body: body,
+          theme: "grid",
+          styles: { cellPadding: 2, fontSize: 10, halign: "left" },
+          headStyles: { fillColor: [0, 0, 128], textColor: [255, 255, 255] },
+        });
+        yOffset = doc.lastAutoTable.finalY + 10;
 
-      // Capture and add pie chart if it exists
-      if (questionReport.yesPercentage !== undefined && pieChartRef.current) {
-        const pieCanvas = await html2canvas(pieChartRef.current);
-        const imgData = pieCanvas.toDataURL("image/png");
-        const imgWidth = 190;
-        const imgHeight = (pieCanvas.height * imgWidth) / pieCanvas.width;
-        doc.addPage();
-        doc.addImage(imgData, "PNG", 10, 20, imgWidth, imgHeight);
-        yOffset = imgHeight + 30;
-      }
-
-      // Capture and add bar chart if it exists
-      if (questionReport.ratings && barChartRef.current) {
-        const barCanvas = await html2canvas(barChartRef.current);
-        const imgData = barCanvas.toDataURL("image/png");
-        const imgWidth = 190;
-        const imgHeight = (barCanvas.height * imgWidth) / barCanvas.width;
-        doc.addPage();
-        doc.addImage(imgData, "PNG", 10, 20, imgWidth, imgHeight);
-        yOffset = imgHeight + 30;
+        // Attempt to capture charts
+        if (questionReport.yesPercentage !== undefined && pieChartRef.current) {
+          const pieCanvas = await html2canvas(pieChartRef.current, {
+            useCORS: true,
+            scale: 2, // Higher resolution
+          });
+          const imgData = pieCanvas.toDataURL("image/png");
+          const imgWidth = 190;
+          const imgHeight = (pieCanvas.height * imgWidth) / pieCanvas.width;
+          if (imgData.length > 100) {
+            // Ensure valid image data
+            doc.addPage();
+            doc.addImage(imgData, "PNG", 10, 20, imgWidth, imgHeight);
+            yOffset = imgHeight + 30;
+          }
+        }
+        if (questionReport.ratings && barChartRef.current) {
+          const barCanvas = await html2canvas(barChartRef.current, {
+            useCORS: true,
+            scale: 2,
+          });
+          const imgData = barCanvas.toDataURL("image/png");
+          const imgWidth = 190;
+          const imgHeight = (barCanvas.height * imgWidth) / barCanvas.width;
+          if (imgData.length > 100) {
+            doc.addPage();
+            doc.addImage(imgData, "PNG", 10, 20, imgWidth, imgHeight);
+            yOffset = imgHeight + 30;
+          }
+        }
       }
     }
 
@@ -290,20 +319,27 @@ function ReportGenerator({ params }) {
         <h2 className="text-2xl font-bold mb-4 text-gray-800">
           Report for {feedbackForm?.title}
         </h2>
-        <div className="mb-6 p-4 border border-gray-300 rounded bg-gray-50">
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <select
-              value={reportType}
-              onChange={(e) => setReportType(e.target.value)}
-              className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="summary">Summary Report</option>
-              <option value="question-specific">
-                Question-Specific Report
-              </option>
-            </select>
-            <div>
-              <label className="mr-2 text-gray-700">Specific Date:</label>
+        <div className="mb-6 p-4 border border-gray-300 rounded bg-gray-100">
+          <div className="flex flex-col lg:flex-row gap-4 mb-4 items-end">
+            <div className="w-full lg:w-auto">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Report Type
+              </label>
+              <select
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
+                className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              >
+                <option value="summary">Summary Report</option>
+                <option value="question-specific">
+                  Question-Specific Report
+                </option>
+              </select>
+            </div>
+            <div className="w-full lg:w-auto">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Specific Date
+              </label>
               <input
                 type="date"
                 value={specificDate}
@@ -312,12 +348,14 @@ function ReportGenerator({ params }) {
                   setStartDate("");
                   setEndDate("");
                 }}
-                className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 disabled={startDate || endDate}
               />
             </div>
-            <div>
-              <label className="mr-2 text-gray-700">Start Date:</label>
+            <div className="w-full lg:w-auto">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Start Date
+              </label>
               <input
                 type="date"
                 value={startDate}
@@ -325,12 +363,14 @@ function ReportGenerator({ params }) {
                   setStartDate(e.target.value);
                   setSpecificDate("");
                 }}
-                className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 disabled={specificDate}
               />
             </div>
-            <div>
-              <label className="mr-2 text-gray-700">End Date:</label>
+            <div className="w-full lg:w-auto">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                End Date
+              </label>
               <input
                 type="date"
                 value={endDate}
@@ -338,32 +378,39 @@ function ReportGenerator({ params }) {
                   setEndDate(e.target.value);
                   setSpecificDate("");
                 }}
-                className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 disabled={specificDate}
               />
             </div>
             {reportType === "question-specific" && (
-              <select
-                value={selectedQuestion}
-                onChange={(e) => setSelectedQuestion(e.target.value)}
-                className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Questions</option>
-                {feedbackForm?.questions.map((q) => (
-                  <option key={q.identity} value={q.identity}>
-                    {q.text}
-                  </option>
-                ))}
-              </select>
+              <div className="w-full lg:w-auto">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Question
+                </label>
+                <select
+                  value={selectedQuestion}
+                  onChange={(e) => setSelectedQuestion(e.target.value)}
+                  className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">All Questions</option>
+                  {feedbackForm?.questions.map((q) => (
+                    <option key={q.identity} value={q.identity}>
+                      {q.text}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
-            <button
-              onClick={handleClearFilters}
-              className="primary-button px-3 py-1 rounded text-center"
-            >
-              Clear
-            </button>
+            <div className="w-full lg:w-auto">
+              <button
+                onClick={handleClearFilters}
+                className="w-full lg:w-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm"
+              >
+                Clear
+              </button>
+            </div>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 mt-2">
             {filterResponses.length} responses found
           </p>
         </div>
