@@ -13,6 +13,13 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
 } from "recharts";
 
 function ReportGenerator({ params }) {
@@ -418,12 +425,68 @@ function ReportGenerator({ params }) {
           {reportType === "summary" && summaryReport && (
             <div>
               <h3 className="text-xl font-semibold mb-2">Summary Report</h3>
-              <p>Total Submissions: {summaryReport.totalSubmissions}</p>
-              <p>Average Rating: {summaryReport.averageRating.toFixed(1)}</p>
-              <p>Yes Percentage: {summaryReport.yesPercentage.toFixed(1)}%</p>
-              <p>No Percentage: {summaryReport.noPercentage.toFixed(1)}%</p>
-              <p>Rating Responses: {summaryReport.ratingCount}</p>
-              <p>Yes/No Responses: {summaryReport.yesNoCount}</p>
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-300 p-2 text-left">
+                      Metric
+                    </th>
+                    <th className="border border-gray-300 p-2 text-left">
+                      Value
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-300 p-2">
+                      Total Submissions
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      {summaryReport.totalSubmissions}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">
+                      Average Rating
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      {summaryReport.averageRating.toFixed(1)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">
+                      Yes Percentage
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      {summaryReport.yesPercentage.toFixed(1)}%
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">
+                      No Percentage
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      {summaryReport.noPercentage.toFixed(1)}%
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">
+                      Rating Responses
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      {summaryReport.ratingCount}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">
+                      Yes/No Responses
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      {summaryReport.yesNoCount}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
               <div className="mt-4 h-64">
                 <h4 className="text-lg font-medium">Yes/No Distribution</h4>
                 <ResponsiveContainer width="100%" height="100%">
@@ -460,20 +523,85 @@ function ReportGenerator({ params }) {
                     const question = feedbackForm.questions.find(
                       (q) => q.identity === id
                     );
+                    const ratingData = Array.from({ length: 5 }, (_, i) => {
+                      const rating = i + 1;
+                      return {
+                        rating: rating.toString(),
+                        count:
+                          stats.ratings?.filter((r) => Math.floor(r) === rating)
+                            .length || 0,
+                      };
+                    });
                     return (
                       <div key={id} className="mb-6">
                         <h4 className="text-lg font-medium">
                           {question?.text}
                         </h4>
-                        {stats.type === "RATING" && (
-                          <p>Average Rating: {stats.average.toFixed(1)}</p>
-                        )}
-                        {stats.type === "YES_NO" && (
-                          <div className="mt-4 h-64">
-                            <h5 className="text-md font-medium">
-                              Yes/No Distribution
-                            </h5>
-                            <ResponsiveContainer width="100%" height="100%">
+                        <table className="w-full border-collapse border border-gray-300">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="border border-gray-300 p-2 text-left">
+                                Metric
+                              </th>
+                              <th className="border border-gray-300 p-2 text-left">
+                                Value
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {stats.type === "RATING" && (
+                              <tr>
+                                <td className="border border-gray-300 p-2">
+                                  Average Rating
+                                </td>
+                                <td className="border border-gray-300 p-2">
+                                  {stats.average.toFixed(1)}
+                                </td>
+                              </tr>
+                            )}
+                            {stats.type === "YES_NO" && (
+                              <>
+                                <tr>
+                                  <td className="border border-gray-300 p-2">
+                                    Yes Percentage
+                                  </td>
+                                  <td className="border border-gray-300 p-2">
+                                    {stats.yesPercentage.toFixed(1)}%
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td className="border border-gray-300 p-2">
+                                    No Percentage
+                                  </td>
+                                  <td className="border border-gray-300 p-2">
+                                    {stats.noPercentage.toFixed(1)}%
+                                  </td>
+                                </tr>
+                              </>
+                            )}
+                          </tbody>
+                        </table>
+                        <div className="mt-4 h-64">
+                          <h5 className="text-md font-medium">
+                            {stats.type === "RATING"
+                              ? "Rating Trend"
+                              : "Yes/No Distribution"}
+                          </h5>
+                          <ResponsiveContainer width="100%" height="100%">
+                            {stats.type === "RATING" ? (
+                              <LineChart data={ratingData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="rating" />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Line
+                                  type="monotone"
+                                  dataKey="count"
+                                  stroke="#3490dc"
+                                />
+                              </LineChart>
+                            ) : (
                               <PieChart>
                                 <Pie
                                   data={[
@@ -492,9 +620,9 @@ function ReportGenerator({ params }) {
                                   ))}
                                 </Pie>
                               </PieChart>
-                            </ResponsiveContainer>
-                          </div>
-                        )}
+                            )}
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     );
                   })}
@@ -510,33 +638,72 @@ function ReportGenerator({ params }) {
                       )?.text
                     }
                   </h3>
-                  {questionReport.averageRating !== undefined && (
-                    <p>
-                      Average Rating: {questionReport.averageRating.toFixed(1)}
-                    </p>
-                  )}
-                  {questionReport.yesPercentage !== undefined && (
-                    <p>
-                      Yes Percentage: {questionReport.yesPercentage.toFixed(1)}%
-                    </p>
-                  )}
-                  {questionReport.noPercentage !== undefined && (
-                    <p>
-                      No Percentage: {questionReport.noPercentage.toFixed(1)}%
-                    </p>
-                  )}
-                  {questionReport.texts && questionReport.texts.length > 0 && (
-                    <div>
-                      <p>Sample Comments:</p>
-                      <ul>
-                        {questionReport.texts.map((text, index) => (
-                          <li key={index} className="ml-4">
-                            {text}
-                          </li>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 p-2 text-left">
+                          Metric
+                        </th>
+                        <th className="border border-gray-300 p-2 text-left">
+                          Value
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {questionReport.averageRating !== undefined && (
+                        <tr>
+                          <td className="border border-gray-300 p-2">
+                            Average Rating
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            {questionReport.averageRating.toFixed(1)}
+                          </td>
+                        </tr>
+                      )}
+                      {questionReport.yesPercentage !== undefined && (
+                        <>
+                          <tr>
+                            <td className="border border-gray-300 p-2">
+                              Yes Percentage
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              {questionReport.yesPercentage.toFixed(1)}%
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-2">
+                              No Percentage
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              {questionReport.noPercentage.toFixed(1)}%
+                            </td>
+                          </tr>
+                        </>
+                      )}
+                      {questionReport.texts &&
+                        questionReport.texts.length > 0 &&
+                        questionReport.texts.map((text, index) => (
+                          <tr key={index}>
+                            <td className="border border-gray-300 p-2">
+                              Comment {index + 1}
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              {text}
+                            </td>
+                          </tr>
                         ))}
-                      </ul>
-                    </div>
-                  )}
+                      {!questionReport.texts && (
+                        <tr>
+                          <td
+                            className="border border-gray-300 p-2"
+                            colSpan="2"
+                          >
+                            No Data
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                   <div className="mt-4">
                     {questionReport.ratings && (
                       <div ref={barChartRef}>
@@ -556,6 +723,11 @@ function ReportGenerator({ params }) {
                                 };
                               })}
                             >
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="name" />
+                              <YAxis />
+                              <Tooltip />
+                              <Legend />
                               <Bar dataKey="value" fill="#3490dc" />
                             </BarChart>
                           </ResponsiveContainer>
