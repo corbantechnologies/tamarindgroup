@@ -38,6 +38,7 @@ function ReportGenerator({ params }) {
   const [endDate, setEndDate] = useState("");
   const [allQuestionsPage, setAllQuestionsPage] = useState(1);
   const [specificTextPage, setSpecificTextPage] = useState(1);
+  const [summaryTextPage, setSummaryTextPage] = useState(1);
 
   const handleClearFilters = () => {
     setSpecificDate("");
@@ -46,6 +47,7 @@ function ReportGenerator({ params }) {
     setSelectedQuestion("");
     setAllQuestionsPage(1);
     setSpecificTextPage(1);
+    setSummaryTextPage(1);
   };
 
   const createdAtDate = (response) =>
@@ -89,6 +91,10 @@ function ReportGenerator({ params }) {
     const yesNo = filterResponses
       .filter((r) => r.yes_no !== null)
       .map((r) => r.yes_no);
+    const texts = filterResponses
+      .filter((r) => r.text)
+      .map((r) => r.text)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     const averageRating =
       ratings.length > 0
         ? ratings.reduce((a, b) => a + b, 0) / ratings.length
@@ -106,6 +112,7 @@ function ReportGenerator({ params }) {
       noPercentage,
       ratingCount: ratings.length,
       yesNoCount: yesNo.length,
+      texts,
     };
   };
 
@@ -238,6 +245,17 @@ function ReportGenerator({ params }) {
         headStyles: { fillColor: [0, 0, 128], textColor: [255, 255, 255] },
       });
       yOffset = doc.lastAutoTable.finalY + 10;
+      if (summaryReport.texts && summaryReport.texts.length > 0) {
+        autoTable(doc, {
+          startY: yOffset,
+          head: [["Comments"]],
+          body: summaryReport.texts.map((text) => [text]),
+          theme: "grid",
+          styles: { cellPadding: 2, fontSize: 10, halign: "left" },
+          headStyles: { fillColor: [0, 0, 128], textColor: [255, 255, 255] },
+        });
+        yOffset = doc.lastAutoTable.finalY + 10;
+      }
     } else if (reportType === "question-specific") {
       if (!selectedQuestion && defaultQuestionReport) {
         doc.text("Ratings for All Questions", 20, (yOffset += 10));
@@ -520,6 +538,64 @@ function ReportGenerator({ params }) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
+              {summaryReport.texts && summaryReport.texts.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-lg font-medium">Comments</h4>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 p-2 text-left">
+                          Comment
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summaryReport.texts
+                        .slice((summaryTextPage - 1) * 10, summaryTextPage * 10)
+                        .map((text, index) => (
+                          <tr key={index}>
+                            <td className="border border-gray-300 p-2">
+                              {text}
+                            </td>
+                          </tr>
+                        ))}
+                      {summaryReport.texts.length === 0 && (
+                        <tr>
+                          <td
+                            className="border border-gray-300 p-2"
+                            colSpan="2"
+                          >
+                            No Data
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                  {summaryReport.texts.length > 10 && (
+                    <div className="mt-2">
+                      <button
+                        onClick={() => setSummaryTextPage(summaryTextPage + 1)}
+                        disabled={
+                          summaryTextPage * 10 >= summaryReport.texts.length
+                        }
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm disabled:bg-gray-400"
+                      >
+                        Next Page
+                      </button>
+                      <button
+                        onClick={() => setSummaryTextPage(summaryTextPage - 1)}
+                        disabled={summaryTextPage === 1}
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm ml-2 disabled:bg-gray-400"
+                      >
+                        Previous Page
+                      </button>
+                      <span className="ml-2 text-sm text-gray-600">
+                        Page {summaryTextPage}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
           {reportType === "question-specific" && (
@@ -529,156 +605,203 @@ function ReportGenerator({ params }) {
                   <h3 className="text-xl font-semibold mb-2">
                     Overview by Question
                   </h3>
-                  {Object.entries(defaultQuestionReport).map(([id, stats]) => {
-                    const question = feedbackForm.questions.find(
-                      (q) => q.identity === id
-                    );
-                    const ratingData = Array.from({ length: 5 }, (_, i) => {
-                      const rating = i + 1;
-                      return {
-                        rating: rating.toString(),
-                        count:
-                          stats.ratings?.filter((r) => Math.floor(r) === rating)
-                            .length || 0,
-                      };
-                    });
-                    const textResponses =
-                      stats.type === "TEXT" ? stats.texts.slice(0, 10) : [];
-                    return (
-                      <div key={id} className="mb-6">
-                        <h4 className="text-lg font-medium">
-                          {question?.text}
-                        </h4>
-                        <table className="w-full border-collapse border border-gray-300">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              <th className="border border-gray-300 p-2 text-left">
-                                Metric
-                              </th>
-                              <th className="border border-gray-300 p-2 text-left">
-                                Value
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {Object.entries(defaultQuestionReport).map(
+                      ([id, stats], index) => {
+                        const question = feedbackForm.questions.find(
+                          (q) => q.identity === id
+                        );
+                        const ratingData = Array.from({ length: 5 }, (_, i) => {
+                          const rating = i + 1;
+                          return {
+                            rating: rating.toString(),
+                            count:
+                              stats.ratings?.filter(
+                                (r) => Math.floor(r) === rating
+                              ).length || 0,
+                          };
+                        });
+                        const textResponses =
+                          stats.type === "TEXT" ? stats.texts.slice(0, 10) : [];
+                        return (
+                          <div
+                            key={id}
+                            className={`mb-6 ${
+                              stats.type === "RATING" ? "" : "col-span-full"
+                            }`}
+                          >
+                            <h4 className="text-lg font-medium">
+                              {question?.text}
+                            </h4>
                             {stats.type === "RATING" && (
-                              <tr>
-                                <td className="border border-gray-300 p-2">
-                                  Average Rating
-                                </td>
-                                <td className="border border-gray-300 p-2">
-                                  {stats.average.toFixed(1)}
-                                </td>
-                              </tr>
+                              <table className="w-full border-collapse border border-gray-300">
+                                <thead>
+                                  <tr className="bg-gray-100">
+                                    <th className="border border-gray-300 p-2 text-left">
+                                      Metric
+                                    </th>
+                                    <th className="border border-gray-300 p-2 text-left">
+                                      Value
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td className="border border-gray-300 p-2">
+                                      Average Rating
+                                    </td>
+                                    <td className="border border-gray-300 p-2">
+                                      {stats.average.toFixed(1)}
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
                             )}
                             {stats.type === "YES_NO" && (
-                              <tr>
-                                <td className="border border-gray-300 p-2">
-                                  Yes Percentage
-                                </td>
-                                <td className="border border-gray-300 p-2">
-                                  {stats.yesPercentage.toFixed(1)}%
-                                </td>
-                              </tr>
+                              <div className="flex flex-col lg:flex-row gap-4">
+                                <table className="w-full lg:w-1/2 border-collapse border border-gray-300">
+                                  <thead>
+                                    <tr className="bg-gray-100">
+                                      <th className="border border-gray-300 p-2 text-left">
+                                        Metric
+                                      </th>
+                                      <th className="border border-gray-300 p-2 text-left">
+                                        Value
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td className="border border-gray-300 p-2">
+                                        Yes Percentage
+                                      </td>
+                                      <td className="border border-gray-300 p-2">
+                                        {stats.yesPercentage.toFixed(1)}%
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td className="border border-gray-300 p-2">
+                                        No Percentage
+                                      </td>
+                                      <td className="border border-gray-300 p-2">
+                                        {stats.noPercentage.toFixed(1)}%
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                                <div className="w-full lg:w-1/2 h-64 mt-4 lg:mt-0">
+                                  <ResponsiveContainer
+                                    width="100%"
+                                    height="100%"
+                                  >
+                                    <BarChart
+                                      data={[
+                                        {
+                                          name: "Yes",
+                                          value: stats.yesPercentage,
+                                        },
+                                        {
+                                          name: "No",
+                                          value: stats.noPercentage,
+                                        },
+                                      ]}
+                                    >
+                                      <CartesianGrid strokeDasharray="3 3" />
+                                      <XAxis dataKey="name" />
+                                      <YAxis />
+                                      <Tooltip />
+                                      <Legend />
+                                      <Bar dataKey="value" fill="#3490dc" />
+                                    </BarChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              </div>
+                            )}
+                            {stats.type === "TEXT" && (
+                              <table className="w-full border-collapse border border-gray-300">
+                                <thead>
+                                  <tr className="bg-gray-100">
+                                    <th className="border border-gray-300 p-2 text-left">
+                                      Comment
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {textResponses.map((text, index) => (
+                                    <tr key={index}>
+                                      <td className="border border-gray-300 p-2">
+                                        {text}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                  {textResponses.length === 0 && (
+                                    <tr>
+                                      <td
+                                        className="border border-gray-300 p-2"
+                                        colSpan="2"
+                                      >
+                                        No Data
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
                             )}
                             {stats.type === "TEXT" &&
-                              textResponses.map((text, index) => (
-                                <tr key={index}>
-                                  <td className="border border-gray-300 p-2">
-                                    Comment {index + 1}
-                                  </td>
-                                  <td className="border border-gray-300 p-2">
-                                    {text}
-                                  </td>
-                                </tr>
-                              ))}
-                            {stats.type === "TEXT" &&
-                              textResponses.length === 0 && (
-                                <tr>
-                                  <td
-                                    className="border border-gray-300 p-2"
-                                    colSpan="2"
+                              stats.texts.length > 10 && (
+                                <div className="mt-2">
+                                  <button
+                                    onClick={() =>
+                                      setAllQuestionsPage(allQuestionsPage + 1)
+                                    }
+                                    disabled={
+                                      allQuestionsPage * 10 >=
+                                      stats.texts.length
+                                    }
+                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm disabled:bg-gray-400"
                                   >
-                                    No Data
-                                  </td>
-                                </tr>
+                                    Next Page
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      setAllQuestionsPage(allQuestionsPage - 1)
+                                    }
+                                    disabled={allQuestionsPage === 1}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm ml-2 disabled:bg-gray-400"
+                                  >
+                                    Previous Page
+                                  </button>
+                                  <span className="ml-2 text-sm text-gray-600">
+                                    Page {allQuestionsPage}
+                                  </span>
+                                </div>
                               )}
-                          </tbody>
-                        </table>
-                        {stats.type === "TEXT" && stats.texts.length > 10 && (
-                          <div className="mt-2">
-                            <button
-                              onClick={() =>
-                                setAllQuestionsPage(allQuestionsPage + 1)
-                              }
-                              disabled={
-                                allQuestionsPage * 10 >= stats.texts.length
-                              }
-                              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm disabled:bg-gray-400"
-                            >
-                              Next Page
-                            </button>
-                            <button
-                              onClick={() =>
-                                setAllQuestionsPage(allQuestionsPage - 1)
-                              }
-                              disabled={allQuestionsPage === 1}
-                              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm ml-2 disabled:bg-gray-400"
-                            >
-                              Previous Page
-                            </button>
-                            <span className="ml-2 text-sm text-gray-600">
-                              Page {allQuestionsPage}
-                            </span>
+                            {stats.type === "RATING" && (
+                              <div className="mt-4 h-64">
+                                <h5 className="text-md font-medium">
+                                  Rating Trend
+                                </h5>
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <LineChart data={ratingData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="rating" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line
+                                      type="monotone"
+                                      dataKey="count"
+                                      stroke="#3490dc"
+                                    />
+                                  </LineChart>
+                                </ResponsiveContainer>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        <div className="mt-4 h-64">
-                          <h5 className="text-md font-medium">
-                            {stats.type === "RATING"
-                              ? "Rating Trend"
-                              : stats.type === "YES_NO"
-                              ? "Yes/No Distribution"
-                              : ""}
-                          </h5>
-                          <ResponsiveContainer width="100%" height="100%">
-                            {stats.type === "RATING" ? (
-                              <LineChart data={ratingData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="rating" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend />
-                                <Line
-                                  type="monotone"
-                                  dataKey="count"
-                                  stroke="#3490dc"
-                                />
-                              </LineChart>
-                            ) : stats.type === "YES_NO" ? (
-                              <PieChart>
-                                <Pie
-                                  data={[
-                                    { name: "Yes", value: stats.yesPercentage },
-                                    { name: "No", value: stats.noPercentage },
-                                  ]}
-                                  dataKey="value"
-                                  nameKey="name"
-                                  cx="50%"
-                                  cy="50%"
-                                  outerRadius={80}
-                                  label
-                                >
-                                  {COLORS.map((color, index) => (
-                                    <Cell key={`cell-${index}`} fill={color} />
-                                  ))}
-                                </Pie>
-                              </PieChart>
-                            ) : null}
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        );
+                      }
+                    )}
+                  </div>
                 </div>
               )}
               {selectedQuestion && questionReport && (
