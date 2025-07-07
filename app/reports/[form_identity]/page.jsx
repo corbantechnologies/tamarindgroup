@@ -36,12 +36,16 @@ function ReportGenerator({ params }) {
   const [specificDate, setSpecificDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [allQuestionsPage, setAllQuestionsPage] = useState(1);
+  const [specificTextPage, setSpecificTextPage] = useState(1);
 
   const handleClearFilters = () => {
     setSpecificDate("");
     setStartDate("");
     setEndDate("");
     setSelectedQuestion("");
+    setAllQuestionsPage(1);
+    setSpecificTextPage(1);
   };
 
   const createdAtDate = (response) =>
@@ -118,7 +122,7 @@ function ReportGenerator({ params }) {
             ratings.length > 0
               ? ratings.reduce((a, b) => a + b, 0) / ratings.length
               : 0,
-          ratings: ratings, // Store individual ratings for PDF table
+          ratings: ratings,
         };
       } else if (question.type === "YES_NO") {
         const yesNo = filterResponses
@@ -134,6 +138,15 @@ function ReportGenerator({ params }) {
           type: "YES_NO",
           yesPercentage,
           noPercentage,
+        };
+      } else if (question.type === "TEXT") {
+        const texts = filterResponses
+          .filter((r) => r.question === question.identity && r.text)
+          .map((r) => r.text)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        questionStats[question.identity] = {
+          type: "TEXT",
+          texts,
         };
       }
     });
@@ -171,7 +184,8 @@ function ReportGenerator({ params }) {
       const texts = responses
         .filter((r) => r.question === selectedQuestion)
         .map((r) => r.text)
-        .filter((t) => t);
+        .filter((t) => t)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       return { texts };
     }
     return null;
@@ -258,10 +272,6 @@ function ReportGenerator({ params }) {
           body.push([
             "Yes Percentage",
             `${questionReport.yesPercentage.toFixed(1)}%`,
-          ]);
-          body.push([
-            "No Percentage",
-            `${questionReport.noPercentage.toFixed(1)}%`,
           ]);
         }
         if (questionReport.texts && questionReport.texts.length > 0) {
@@ -532,6 +542,8 @@ function ReportGenerator({ params }) {
                             .length || 0,
                       };
                     });
+                    const textResponses =
+                      stats.type === "TEXT" ? stats.texts.slice(0, 10) : [];
                     return (
                       <div key={id} className="mb-6">
                         <h4 className="text-lg font-medium">
@@ -560,32 +572,73 @@ function ReportGenerator({ params }) {
                               </tr>
                             )}
                             {stats.type === "YES_NO" && (
-                              <>
-                                <tr>
-                                  <td className="border border-gray-300 p-2">
-                                    Yes Percentage
-                                  </td>
-                                  <td className="border border-gray-300 p-2">
-                                    {stats.yesPercentage.toFixed(1)}%
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td className="border border-gray-300 p-2">
-                                    No Percentage
-                                  </td>
-                                  <td className="border border-gray-300 p-2">
-                                    {stats.noPercentage.toFixed(1)}%
-                                  </td>
-                                </tr>
-                              </>
+                              <tr>
+                                <td className="border border-gray-300 p-2">
+                                  Yes Percentage
+                                </td>
+                                <td className="border border-gray-300 p-2">
+                                  {stats.yesPercentage.toFixed(1)}%
+                                </td>
+                              </tr>
                             )}
+                            {stats.type === "TEXT" &&
+                              textResponses.map((text, index) => (
+                                <tr key={index}>
+                                  <td className="border border-gray-300 p-2">
+                                    Comment {index + 1}
+                                  </td>
+                                  <td className="border border-gray-300 p-2">
+                                    {text}
+                                  </td>
+                                </tr>
+                              ))}
+                            {stats.type === "TEXT" &&
+                              textResponses.length === 0 && (
+                                <tr>
+                                  <td
+                                    className="border border-gray-300 p-2"
+                                    colSpan="2"
+                                  >
+                                    No Data
+                                  </td>
+                                </tr>
+                              )}
                           </tbody>
                         </table>
+                        {stats.type === "TEXT" && stats.texts.length > 10 && (
+                          <div className="mt-2">
+                            <button
+                              onClick={() =>
+                                setAllQuestionsPage(allQuestionsPage + 1)
+                              }
+                              disabled={
+                                allQuestionsPage * 10 >= stats.texts.length
+                              }
+                              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm disabled:bg-gray-400"
+                            >
+                              Next Page
+                            </button>
+                            <button
+                              onClick={() =>
+                                setAllQuestionsPage(allQuestionsPage - 1)
+                              }
+                              disabled={allQuestionsPage === 1}
+                              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm ml-2 disabled:bg-gray-400"
+                            >
+                              Previous Page
+                            </button>
+                            <span className="ml-2 text-sm text-gray-600">
+                              Page {allQuestionsPage}
+                            </span>
+                          </div>
+                        )}
                         <div className="mt-4 h-64">
                           <h5 className="text-md font-medium">
                             {stats.type === "RATING"
                               ? "Rating Trend"
-                              : "Yes/No Distribution"}
+                              : stats.type === "YES_NO"
+                              ? "Yes/No Distribution"
+                              : ""}
                           </h5>
                           <ResponsiveContainer width="100%" height="100%">
                             {stats.type === "RATING" ? (
@@ -601,7 +654,7 @@ function ReportGenerator({ params }) {
                                   stroke="#3490dc"
                                 />
                               </LineChart>
-                            ) : (
+                            ) : stats.type === "YES_NO" ? (
                               <PieChart>
                                 <Pie
                                   data={[
@@ -620,7 +673,7 @@ function ReportGenerator({ params }) {
                                   ))}
                                 </Pie>
                               </PieChart>
-                            )}
+                            ) : null}
                           </ResponsiveContainer>
                         </div>
                       </div>
@@ -661,49 +714,72 @@ function ReportGenerator({ params }) {
                         </tr>
                       )}
                       {questionReport.yesPercentage !== undefined && (
-                        <>
-                          <tr>
-                            <td className="border border-gray-300 p-2">
-                              Yes Percentage
-                            </td>
-                            <td className="border border-gray-300 p-2">
-                              {questionReport.yesPercentage.toFixed(1)}%
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="border border-gray-300 p-2">
-                              No Percentage
-                            </td>
-                            <td className="border border-gray-300 p-2">
-                              {questionReport.noPercentage.toFixed(1)}%
-                            </td>
-                          </tr>
-                        </>
-                      )}
-                      {questionReport.texts &&
-                        questionReport.texts.length > 0 &&
-                        questionReport.texts.map((text, index) => (
-                          <tr key={index}>
-                            <td className="border border-gray-300 p-2">
-                              Comment {index + 1}
-                            </td>
-                            <td className="border border-gray-300 p-2">
-                              {text}
-                            </td>
-                          </tr>
-                        ))}
-                      {!questionReport.texts && (
                         <tr>
-                          <td
-                            className="border border-gray-300 p-2"
-                            colSpan="2"
-                          >
-                            No Data
+                          <td className="border border-gray-300 p-2">
+                            Yes Percentage
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            {questionReport.yesPercentage.toFixed(1)}%
                           </td>
                         </tr>
                       )}
+                      {questionReport.texts &&
+                        questionReport.texts
+                          .slice(
+                            (specificTextPage - 1) * 10,
+                            specificTextPage * 10
+                          )
+                          .map((text, index) => (
+                            <tr key={index}>
+                              <td className="border border-gray-300 p-2">
+                                Comment{" "}
+                                {index + 1 + (specificTextPage - 1) * 10}
+                              </td>
+                              <td className="border border-gray-300 p-2">
+                                {text}
+                              </td>
+                            </tr>
+                          ))}
+                      {questionReport.texts &&
+                        questionReport.texts.length === 0 && (
+                          <tr>
+                            <td
+                              className="border border-gray-300 p-2"
+                              colSpan="2"
+                            >
+                              No Data
+                            </td>
+                          </tr>
+                        )}
                     </tbody>
                   </table>
+                  {questionReport.texts && questionReport.texts.length > 10 && (
+                    <div className="mt-2">
+                      <button
+                        onClick={() =>
+                          setSpecificTextPage(specificTextPage + 1)
+                        }
+                        disabled={
+                          specificTextPage * 10 >= questionReport.texts.length
+                        }
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm disabled:bg-gray-400"
+                      >
+                        Next Page
+                      </button>
+                      <button
+                        onClick={() =>
+                          setSpecificTextPage(specificTextPage - 1)
+                        }
+                        disabled={specificTextPage === 1}
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm ml-2 disabled:bg-gray-400"
+                      >
+                        Previous Page
+                      </button>
+                      <span className="ml-2 text-sm text-gray-600">
+                        Page {specificTextPage}
+                      </span>
+                    </div>
+                  )}
                   <div className="mt-4">
                     {questionReport.ratings && (
                       <div ref={barChartRef}>
@@ -750,7 +826,7 @@ function ReportGenerator({ params }) {
                                   },
                                   {
                                     name: "No",
-                                    value: questionReport.noPercentage,
+                                    value: 100 - questionReport.yesPercentage,
                                   },
                                 ]}
                                 dataKey="value"
