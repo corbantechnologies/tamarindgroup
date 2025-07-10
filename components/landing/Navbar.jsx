@@ -47,6 +47,9 @@ function Navbar() {
             <li>
               <Link href={"/"}>Directory</Link>
             </li>
+            <li>
+              <Link href={"/events"}>Events</Link>
+            </li>
           </ul>
         </div>
       </div>
