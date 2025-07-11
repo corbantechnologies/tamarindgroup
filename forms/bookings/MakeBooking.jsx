@@ -112,8 +112,8 @@ function MakeBooking({ event, closeModal, refetchEvent }) {
                 console.log(response?.data?.reference);
                 router.push(`/payment/${response?.data?.reference}`);
                 setLoading(false);
-                // refetchEvent();
-                // closeModal();
+                refetchEvent();
+                closeModal();
               } catch (error) {
                 console.error("Error creating booking:", error);
                 setLoading(false);
