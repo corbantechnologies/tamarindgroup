@@ -1,9 +1,11 @@
+// forms/bookings/CreateBooking.jsx
 "use client";
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import React, { useState } from "react";
 import * as Yup from "yup";
 import { createBooking } from "@/services/bookings";
+import { apiActions } from "@/tools/api";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -38,6 +40,35 @@ const validationSchema = Yup.object({
 function CreateBooking({ event, closeModal, refetchEvent }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [formValues, setFormValues] = useState(null); // Store form values for retry/fallback
+
+  // Check if any ticket types are available
+  const hasAvailableTickets = event.ticket_types.some(
+    (ticket) => !ticket.quantity_available || ticket.quantity_available > 0
+  );
+
+  // Fallback to find booking by phone and name
+  const findBookingByDetails = async (phone, name, ticketType) => {
+    try {
+      const response = await apiActions.get(
+        `/api/v1/bookings/?phone=${encodeURIComponent(
+          phone
+        )}&name=${encodeURIComponent(name)}`
+      );
+      const bookings = response.data;
+      // Find the most recent booking for the ticket type and status PENDING
+      const matchingBooking = bookings.find(
+        (b) =>
+          b.ticket_type.identity === ticketType &&
+          b.status === "PENDING" &&
+          new Date(b.created_at) > new Date(Date.now() - 15 * 60 * 1000) // Within last 15 minutes
+      );
+      return matchingBooking;
+    } catch (error) {
+      console.error("Error finding booking:", error);
+      return null;
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -65,233 +96,343 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
             </svg>
           </button>
         </div>
-        <Formik
-          initialValues={{
-            ticket_type: "",
-            quantity: 1,
-            name: "",
-            email: "",
-            phone: "",
-          }}
-          validationSchema={validationSchema}
-          context={{ ticket_types: event.ticket_types }}
-          onSubmit={async (values, { setSubmitting }) => {
-            setLoading(true);
-            try {
-              const formData = new FormData();
-              formData.append("ticket_type", values.ticket_type);
-              formData.append("quantity", values.quantity);
-              formData.append("name", values.name);
-              formData.append("email", values.email);
-              formData.append("phone", values.phone);
 
-              const response = await createBooking(formData);
-              console.log("Booking API response:", response); // Debug log
-              const bookingReference = response?.data?.reference;
-              if (!bookingReference) {
-                throw new Error("No booking reference returned from API");
+        {!hasAvailableTickets ? (
+          <div className="text-center py-4">
+            <p className="text-red-500 font-medium mb-4">
+              Sorry, no tickets are available for this event.
+            </p>
+            <button
+              onClick={() => {
+                closeModal();
+                router.push(`/events/${event.identity}`);
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Back to Event
+            </button>
+          </div>
+        ) : (
+          <Formik
+            initialValues={{
+              ticket_type: "",
+              quantity: 1,
+              name: "",
+              email: "",
+              phone: "",
+            }}
+            validationSchema={validationSchema}
+            context={{ ticket_types: event.ticket_types }}
+            onSubmit={async (values, { setSubmitting, setFieldError }) => {
+              setLoading(true);
+              setFormValues(values); // Store form values for retry/fallback
+
+              try {
+                // Step 1: Create booking
+                const formData = new FormData();
+                formData.append("ticket_type", values.ticket_type);
+                formData.append("quantity", values.quantity);
+                formData.append("name", values.name);
+                formData.append("email", values.email);
+                formData.append("phone", values.phone);
+
+                const createResponse = await createBooking(formData);
+                console.log("createBooking response:", createResponse); // Debug full response
+                const bookingReference = createResponse?.data?.reference;
+
+                if (!bookingReference) {
+                  // Step 2: Fallback to find booking by phone and name
+                  const bookingData = await findBookingByDetails(
+                    values.phone,
+                    values.name,
+                    values.ticket_type
+                  );
+                  if (!bookingData || bookingData.status !== "PENDING") {
+                    throw new Error(
+                      "Booking created but could not be confirmed"
+                    );
+                  }
+
+                  // Use fallback booking data
+                  const selectedTicket = event.ticket_types.find(
+                    (t) => t.identity === values.ticket_type
+                  );
+                  const totalAmount = (
+                    parseFloat(selectedTicket.price) * values.quantity
+                  ).toFixed(2);
+
+                  toast.success(
+                    "Booking created successfully! Redirecting to payment..."
+                  );
+                  router.push(
+                    `/payment?bookingReference=${
+                      bookingData.reference
+                    }&ticketType=${selectedTicket.name}&quantity=${
+                      values.quantity
+                    }&amount=${totalAmount}&name=${encodeURIComponent(
+                      values.name
+                    )}&email=${encodeURIComponent(
+                      values.email || ""
+                    )}&phone=${encodeURIComponent(values.phone)}`
+                  );
+                } else {
+                  // Step 3: Use response booking reference
+                  const selectedTicket = event.ticket_types.find(
+                    (t) => t.identity === values.ticket_type
+                  );
+                  const totalAmount = (
+                    parseFloat(selectedTicket.price) * values.quantity
+                  ).toFixed(2);
+
+                  toast.success(
+                    "Booking created successfully! Redirecting to payment..."
+                  );
+                  router.push(
+                    `/payment?bookingReference=${bookingReference}&ticketType=${
+                      selectedTicket.name
+                    }&quantity=${
+                      values.quantity
+                    }&amount=${totalAmount}&name=${encodeURIComponent(
+                      values.name
+                    )}&email=${encodeURIComponent(
+                      values.email || ""
+                    )}&phone=${encodeURIComponent(values.phone)}`
+                  );
+                }
+              } catch (error) {
+                console.error("Booking error:", error);
+                const errorMessage =
+                  error?.response?.data?.non_field_errors?.[0] ||
+                  error?.response?.data?.detail ||
+                  error.message ||
+                  "Please try again";
+
+                if (errorMessage.includes("Only 0 tickets available")) {
+                  setFieldError(
+                    "quantity",
+                    "No tickets available for the selected ticket type. Please choose another."
+                  );
+                  toast.error(
+                    "No tickets available for the selected ticket type. Please choose another."
+                  );
+                } else if (
+                  errorMessage.includes(
+                    "Booking created but could not be confirmed"
+                  )
+                ) {
+                  toast.error(
+                    "Booking was created but could not be confirmed. Please try again or contact support."
+                  );
+                } else {
+                  toast.error("Error creating booking: " + errorMessage);
+                }
+
+                // Refetch event to update ticket availability
+                refetchEvent();
+              } finally {
+                setLoading(false);
+                setSubmitting(false);
               }
+            }}
+          >
+            {({ isSubmitting, values, setFieldValue }) => {
               const selectedTicket = event.ticket_types.find(
                 (t) => t.identity === values.ticket_type
               );
-              const totalAmount = (
-                parseFloat(selectedTicket.price) * values.quantity
-              ).toFixed(2);
+              const maxQuantity = selectedTicket?.quantity_available || 10; // Fallback to 10 if unlimited
 
-              toast.success(
-                "Booking created successfully! Redirecting to payment..."
+              return (
+                <Form className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="ticket_type"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Ticket Type
+                    </label>
+                    <Field
+                      as="select"
+                      name="ticket_type"
+                      className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                    >
+                      <option value="">Select a ticket type</option>
+                      {event.ticket_types.map((ticket) => (
+                        <option
+                          key={ticket.id}
+                          value={ticket.identity}
+                          disabled={
+                            ticket.quantity_available !== null &&
+                            ticket.quantity_available <= 0
+                          }
+                        >
+                          {ticket.name} - KES{" "}
+                          {parseFloat(ticket.price).toLocaleString()}
+                          {ticket.quantity_available !== null
+                            ? ` (${ticket.quantity_available} available)`
+                            : " (Unlimited)"}
+                        </option>
+                      ))}
+                    </Field>
+                    <ErrorMessage
+                      name="ticket_type"
+                      component="p"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="quantity"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Quantity
+                    </label>
+                    <div className="flex items-center mt-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFieldValue(
+                            "quantity",
+                            Math.max(1, values.quantity - 1)
+                          )
+                        }
+                        className="px-3 py-1 border border-gray-300 rounded-l-md hover:bg-gray-100 disabled:bg-gray-100"
+                        disabled={values.quantity <= 1}
+                      >
+                        -
+                      </button>
+                      <Field
+                        type="number"
+                        name="quantity"
+                        min="1"
+                        max={maxQuantity}
+                        className="w-full px-3 py-1 text-center border-t border-b border-gray-300 focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFieldValue(
+                            "quantity",
+                            Math.min(maxQuantity, values.quantity + 1)
+                          )
+                        }
+                        className="px-3 py-1 border border-gray-300 rounded-r-md hover:bg-gray-100"
+                        disabled={values.quantity >= maxQuantity}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <ErrorMessage
+                      name="quantity"
+                      component="p"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                    {selectedTicket &&
+                      selectedTicket.quantity_available !== null && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          {selectedTicket.quantity_available} tickets available
+                        </p>
+                      )}
+                  </div>
+
+                  {values.ticket_type && (
+                    <div className="text-sm text-gray-700">
+                      <strong>Total Cost:</strong> KES{" "}
+                      {(
+                        parseFloat(
+                          event.ticket_types.find(
+                            (t) => t.identity === values.ticket_type
+                          )?.price || 0
+                        ) * values.quantity
+                      ).toLocaleString()}
+                    </div>
+                  )}
+
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Full Name
+                    </label>
+                    <Field
+                      type="text"
+                      name="name"
+                      className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                    />
+                    <ErrorMessage
+                      name="name"
+                      component="p"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Email (Optional, for ticket delivery)
+                    </label>
+                    <Field
+                      type="email"
+                      name="email"
+                      className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                    />
+                    <ErrorMessage
+                      name="email"
+                      component="p"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="phone"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Phone Number <span className="text-red-500">*</span>{" "}
+                      (Required for ticket verification)
+                    </label>
+                    <Field
+                      type="text"
+                      name="phone"
+                      placeholder="+1234567890"
+                      className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                    />
+                    <ErrorMessage
+                      name="phone"
+                      component="p"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
+
+                  <p className="text-xs text-gray-500">
+                    Complete your booking within 15 minutes to secure your
+                    tickets.
+                  </p>
+
+                  <div className="flex justify-end gap-4">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || loading}
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-400"
+                    >
+                      {loading ? "Processing..." : "Proceed to Payment"}
+                    </button>
+                  </div>
+                </Form>
               );
-              router.push(
-                `/payment?bookingReference=${bookingReference}&ticketType=${
-                  values.ticket_type
-                }&quantity=${
-                  values.quantity
-                }&amount=${totalAmount}&name=${encodeURIComponent(
-                  values.name
-                )}&email=${encodeURIComponent(
-                  values.email || ""
-                )}&phone=${encodeURIComponent(values.phone)}`
-              );
-            } catch (error) {
-              console.error("Booking error:", error);
-              toast.error(
-                "Error creating booking: " +
-                  (error.message || "Please try again")
-              );
-            } finally {
-              setLoading(false);
-              setSubmitting(false);
-            }
-          }}
-        >
-          {({ isSubmitting, values, setFieldValue }) => (
-            <Form className="space-y-4">
-              <div>
-                <label
-                  htmlFor="ticket_type"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Ticket Type
-                </label>
-                <Field
-                  as="select"
-                  name="ticket_type"
-                  className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
-                >
-                  <option value="">Select a ticket type</option>
-                  {event.ticket_types.map((ticket) => (
-                    <option key={ticket.id} value={ticket.identity}>
-                      {ticket.name} - KES{" "}
-                      {parseFloat(ticket.price).toLocaleString()}
-                    </option>
-                  ))}
-                </Field>
-                <ErrorMessage
-                  name="ticket_type"
-                  component="p"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="quantity"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Quantity
-                </label>
-                <div className="flex items-center mt-1">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFieldValue(
-                        "quantity",
-                        Math.max(1, values.quantity - 1)
-                      )
-                    }
-                    className="px-3 py-1 border border-gray-300 rounded-l-md hover:bg-gray-100 disabled:bg-gray-100"
-                    disabled={values.quantity <= 1}
-                  >
-                    -
-                  </button>
-                  <Field
-                    type="number"
-                    name="quantity"
-                    min="1"
-                    className="w-full px-3 py-1 text-center border-t border-b border-gray-300 focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFieldValue("quantity", values.quantity + 1)
-                    }
-                    className="px-3 py-1 border border-gray-300 rounded-r-md hover:bg-gray-100"
-                  >
-                    +
-                  </button>
-                </div>
-                <ErrorMessage
-                  name="quantity"
-                  component="p"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
-
-              {values.ticket_type && (
-                <div className="text-sm text-gray-700">
-                  <strong>Total Cost:</strong> KES{" "}
-                  {(
-                    parseFloat(
-                      event.ticket_types.find(
-                        (t) => t.identity === values.ticket_type
-                      )?.price || 0
-                    ) * values.quantity
-                  ).toLocaleString()}
-                </div>
-              )}
-
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Full Name
-                </label>
-                <Field
-                  type="text"
-                  name="name"
-                  className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
-                />
-                <ErrorMessage
-                  name="name"
-                  component="p"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email (Optional, for ticket delivery)
-                </label>
-                <Field
-                  type="email"
-                  name="email"
-                  className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
-                />
-                <ErrorMessage
-                  name="email"
-                  component="p"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Phone Number <span className="text-red-500">*</span> (Required
-                  for ticket verification)
-                </label>
-                <Field
-                  type="text"
-                  name="phone"
-                  placeholder="+1234567890"
-                  className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
-                />
-                <ErrorMessage
-                  name="phone"
-                  component="p"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
-
-              <p className="text-xs text-gray-500">
-                Complete your booking within 15 minutes to secure your tickets.
-              </p>
-
-              <div className="flex justify-end gap-4">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting || loading}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-400"
-                >
-                  {loading ? "Processing..." : "Proceed to Payment"}
-                </button>
-              </div>
-            </Form>
-          )}
-        </Formik>
+            }}
+          </Formik>
+        )}
       </div>
     </div>
   );
