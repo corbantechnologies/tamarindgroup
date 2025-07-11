@@ -16,7 +16,7 @@ const validationSchema = Yup.object({
       "Quantity exceeds available tickets",
       function (value) {
         const ticketType = this.parent.ticket_type;
-        const ticket = this.options.context.ticket_types.find(
+        const ticket = this.options?.context.ticket_types?.find(
           (t) => t.identity === ticketType
         );
         return !ticket.quantity_available || value <= ticket.quantity_available;
@@ -121,7 +121,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 <Field
                   as="select"
                   name="ticket_type"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                  className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                 >
                   <option value="">Select a ticket type</option>
                   {event.ticket_types.map((ticket) => (
