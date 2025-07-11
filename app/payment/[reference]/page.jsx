@@ -9,7 +9,7 @@ import LoadingSpinner from "@/components/general/LoadingSpinner";
 
 function PaymentStatus() {
   const router = useRouter();
-  const { reference, status } = useParams();
+  const { reference } = useParams();
   const [booking, setBooking] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);

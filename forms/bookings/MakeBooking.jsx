@@ -106,7 +106,7 @@ function MakeBooking({ event, closeModal, refetchEvent }) {
                   `/api/v1/bookings/`,
                   formData
                 );
-                localStorage.setItem("booking", JSON.stringify(response.data));
+                router.push(`/payment/${response.reference}`)
                 setLoading(false);
                 refetchEvent();
                 closeModal();
