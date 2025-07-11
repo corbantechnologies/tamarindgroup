@@ -71,8 +71,8 @@ function EventDetail({ params }) {
       {showBookingModal && (
         <MakeBooking
           event={event}
-          // closeModal={() => setShowBookingModal(false)}
-          // refetchEvent={refetchEvent}
+          closeModal={() => setShowBookingModal(false)}
+          refetchEvent={refetchEvent}
         />
       )}
       <div className="bg-white shadow-sm sticky top-0 z-10">
