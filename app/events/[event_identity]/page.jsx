@@ -14,6 +14,7 @@ import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchEvent } from "@/hooks/events/actions";
 import TicketTypeChip from "@/components/events/TicketTypeChip";
 import CreateBooking from "@/forms/bookings/CreateBooking";
+import MakeBooking from "@/forms/bookings/MakeBooking";
 
 function EventDetail({ params }) {
   const { event_identity } = use(params);
@@ -68,10 +69,10 @@ function EventDetail({ params }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {showBookingModal && (
-        <CreateBooking
+        <MakeBooking
           event={event}
-          closeModal={() => setShowBookingModal(false)}
-          refetchEvent={refetchEvent}
+          // closeModal={() => setShowBookingModal(false)}
+          // refetchEvent={refetchEvent}
         />
       )}
       <div className="bg-white shadow-sm sticky top-0 z-10">
