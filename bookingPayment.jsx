@@ -238,14 +238,14 @@ function BookingPayment() {
                   {booking.payment_status}
                 </span>
               </div>
-              {/* {booking.merchant_reference && (
+              {booking.merchant_reference && (
                 <div className="flex justify-between">
                   <span>Merchant Reference:</span>
                   <span className="font-mono text-xs">
                     {booking.merchant_reference}
                   </span>
                 </div>
-              )} */}
+              )}
             </div>
             <hr className="my-4" />
             {booking.payment_status === "PENDING" && (
