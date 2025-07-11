@@ -47,12 +47,9 @@ function BookingPayment() {
     try {
       const payload = {
         booking_reference: booking.reference,
-        currency: booking.currency || "KES",
-        callback_url: `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payments/pesapal/callback`,
-        cancellation_url: `${process.env.NEXT_PUBLIC_DOMAIN}/events?payment=failed`,
       };
 
-      const response = await apiActions.post(
+      const response = await apiActions?.post(
         "/api/v1/payments/pesapal/create/",
         payload
       );
