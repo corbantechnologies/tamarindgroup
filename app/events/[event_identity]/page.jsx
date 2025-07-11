@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use } from "react";
+import React, { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Calendar,
@@ -13,10 +13,13 @@ import {
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchEvent } from "@/hooks/events/actions";
 import TicketTypeChip from "@/components/events/TicketTypeChip";
+import CreateBooking from "@/forms/bookings/CreateBooking";
+import MakeBooking from "@/forms/bookings/MakeBooking";
 
 function EventDetail({ params }) {
   const { event_identity } = use(params);
   const router = useRouter();
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
   const {
     isLoading: isLoadingEvent,
@@ -65,6 +68,13 @@ function EventDetail({ params }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {showBookingModal && (
+        <MakeBooking
+          event={event}
+          // closeModal={() => setShowBookingModal(false)}
+          // refetchEvent={refetchEvent}
+        />
+      )}
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -205,10 +215,6 @@ function EventDetail({ params }) {
                             <p className="text-sm text-gray-600">
                               {ticket.quantity_available} tickets available
                             </p>
-                          ) : ticket.is_limited ? (
-                            <p className="text-sm text-gray-600">
-                              Limited tickets available
-                            </p>
                           ) : (
                             <p className="text-sm text-gray-600">
                               Unlimited tickets available
@@ -217,7 +223,10 @@ function EventDetail({ params }) {
                         </div>
                       ))}
                     </div>
-                    <button className="w-full primary-button py-3 px-4 rounded-lg font-medium text-lg">
+                    <button
+                      onClick={() => setShowBookingModal(true)}
+                      className="w-full primary-button py-3 px-4 rounded-lg font-medium text-lg"
+                    >
                       Get Tickets
                     </button>
                     <p className="text-xs text-gray-500 text-center">
