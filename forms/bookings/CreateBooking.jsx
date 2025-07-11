@@ -15,11 +15,11 @@ const validationSchema = Yup.object({
       "quantity-available",
       "Quantity exceeds available tickets",
       function (value) {
-        const ticketType = this.parent.ticket_type;
-        const ticket = this.options?.context.ticket_types?.find(
-          (t) => t.identity === ticketType
+        const ticketType = this?.parent?.ticket_type;
+        const ticket = this?.options?.context.ticket_types?.find(
+          (t) => t?.identity === ticketType
         );
-        return !ticket.quantity_available || value <= ticket.quantity_available;
+        return !ticket?.quantity_available || value <= ticket?.quantity_available;
       }
     ),
   name: Yup.string().required("Name is required"),
@@ -121,7 +121,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 <Field
                   as="select"
                   name="ticket_type"
-                  className="mt-1 p-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                  className="mt-1 p-2 block border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                 >
                   <option value="">Select a ticket type</option>
                   {event.ticket_types.map((ticket) => (
@@ -163,7 +163,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                     type="number"
                     name="quantity"
                     min="1"
-                    className="w-full text-center border-t border-b border-gray-300 focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                    className="w-full px-3 py-1 text-center border-t border-b border-gray-300 focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                   />
                   <button
                     type="button"
@@ -206,7 +206,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 <Field
                   type="text"
                   name="name"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                  className="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                 />
                 <ErrorMessage
                   name="name"
@@ -225,7 +225,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 <Field
                   type="email"
                   name="email"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                  className="mt-1 p-2 block w-full border rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                 />
                 <ErrorMessage
                   name="email"
@@ -245,7 +245,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                   type="text"
                   name="phone"
                   placeholder="+1234567890"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                  className="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                 />
                 <ErrorMessage
                   name="phone"
