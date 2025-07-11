@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import * as Yup from "yup";
 import { createBooking } from "@/services/bookings";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const validationSchema = Yup.object({
   ticket_type: Yup.string().required("Please select a ticket type"),
@@ -16,7 +17,7 @@ const validationSchema = Yup.object({
       "Quantity exceeds available tickets",
       function (value) {
         const ticketType = this?.parent?.ticket_type;
-        const ticket = this?.options?.context.ticket_types?.find(
+        const ticket = this?.options?.context?.ticket_types?.find(
           (t) => t?.identity === ticketType
         );
         return !ticket?.quantity_available || value <= ticket?.quantity_available;
@@ -92,6 +93,9 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 parseFloat(selectedTicket.price) * values.quantity
               ).toFixed(2);
 
+              toast.success(
+                "Booking created successfully! Redirecting to payment..."
+              );
               router.push(
                 `/payment?bookingReference=${bookingReference}&ticketType=${
                   values.ticket_type
@@ -102,7 +106,10 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 )}&email=${encodeURIComponent(values.email || "")}`
               );
             } catch (error) {
-              alert("Error creating booking!");
+              toast.error(
+                "Error creating booking: " +
+                  (error.message || "Please try again")
+              );
             } finally {
               setLoading(false);
               setSubmitting(false);
@@ -121,7 +128,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 <Field
                   as="select"
                   name="ticket_type"
-                  className="mt-1 p-2 block border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                  className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                 >
                   <option value="">Select a ticket type</option>
                   {event.ticket_types.map((ticket) => (
@@ -154,7 +161,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                         Math.max(1, values.quantity - 1)
                       )
                     }
-                    className="px-3 py-1 border border-gray-300 rounded-l-md hover:bg-gray-100"
+                    className="px-3 py-1 border border-gray-300 rounded-l-md hover:bg-gray-100 disabled:bg-gray-100"
                     disabled={values.quantity <= 1}
                   >
                     -
@@ -182,7 +189,6 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 />
               </div>
 
-              {/* Total Cost Display */}
               {values.ticket_type && (
                 <div className="text-sm text-gray-700">
                   <strong>Total Cost:</strong> KES{" "}
@@ -206,7 +212,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 <Field
                   type="text"
                   name="name"
-                  className="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                  className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                 />
                 <ErrorMessage
                   name="name"
@@ -220,12 +226,12 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Email (Optional)
+                  Email (Optional, for ticket delivery)
                 </label>
                 <Field
                   type="email"
                   name="email"
-                  className="mt-1 p-2 block w-full border rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                  className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                 />
                 <ErrorMessage
                   name="email"
@@ -245,7 +251,7 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                   type="text"
                   name="phone"
                   placeholder="+1234567890"
-                  className="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
+                  className="mt-1 block p-2 border w-full rounded-md border-gray-300 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50"
                 />
                 <ErrorMessage
                   name="phone"
@@ -253,6 +259,10 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
+
+              <p className="text-xs text-gray-500">
+                Complete your booking within 15 minutes to secure your tickets.
+              </p>
 
               <div className="flex justify-end gap-4">
                 <button
