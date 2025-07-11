@@ -16,47 +16,32 @@ import {
 import toast from "react-hot-toast";
 import { apiActions } from "@/tools/api";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import { useFetchBooking } from "@/hooks/bookings/actions";
 
 function BookingPayment() {
   const router = useRouter();
   const { reference } = useParams();
-  const [booking, setBooking] = useState(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchBookingDetails = async () => {
-      try {
-        const response = await apiActions.get(`/api/v1/bookings/${reference}/`);
-        setBooking(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching booking details:", error);
-        toast.error("Error loading booking details. Please try again.");
-        setLoading(false);
-      }
-    };
-
-    if (reference) {
-      fetchBookingDetails();
-    }
-  }, [reference]);
+  const {
+    isLoading: isLoadingBooking,
+    data: booking,
+    refetch: refetchBooking,
+  } = useFetchBooking(reference);
 
   const handlePayment = async () => {
     setIsProcessingPayment(true);
     try {
       const payload = {
-        booking_reference: booking.reference,
+        booking_reference: booking?.reference,
       };
 
-      const response = await apiActions?.post(
-        "/api/v1/payments/pesapal/create/",
-        payload
-      );
+      const response = await apiActions?.post("/api/v1/payments/pay/", payload);
       const { redirect_url } = response.data;
 
       if (redirect_url) {
-        window.location.href = redirect_url; // Redirect to Pesapal payment page
+        window.location.href = redirect_url;
       } else {
         throw new Error("No redirect URL returned from payment API");
       }
@@ -83,12 +68,8 @@ function BookingPayment() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
+  if (isLoadingBooking) {
+    return <LoadingSpinner />;
   }
 
   if (!booking) {
