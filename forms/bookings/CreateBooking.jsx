@@ -20,7 +20,9 @@ const validationSchema = Yup.object({
         const ticket = this?.options?.context?.ticket_types?.find(
           (t) => t?.identity === ticketType
         );
-        return !ticket?.quantity_available || value <= ticket?.quantity_available;
+        return (
+          !ticket?.quantity_available || value <= ticket?.quantity_available
+        );
       }
     ),
   name: Yup.string().required("Name is required"),
@@ -84,8 +86,11 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
               formData.append("phone", values.phone);
 
               const response = await createBooking(formData);
-              const bookingReference =
-                response?.data?.reference || "temp-booking-ref";
+              console.log("Booking API response:", response); // Debug log
+              const bookingReference = response?.data?.reference;
+              if (!bookingReference) {
+                throw new Error("No booking reference returned from API");
+              }
               const selectedTicket = event.ticket_types.find(
                 (t) => t.identity === values.ticket_type
               );
@@ -103,9 +108,12 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                   values.quantity
                 }&amount=${totalAmount}&name=${encodeURIComponent(
                   values.name
-                )}&email=${encodeURIComponent(values.email || "")}`
+                )}&email=${encodeURIComponent(
+                  values.email || ""
+                )}&phone=${encodeURIComponent(values.phone)}`
               );
             } catch (error) {
+              console.error("Booking error:", error);
               toast.error(
                 "Error creating booking: " +
                   (error.message || "Please try again")
@@ -245,7 +253,8 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                   htmlFor="phone"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Phone Number
+                  Phone Number <span className="text-red-500">*</span> (Required
+                  for ticket verification)
                 </label>
                 <Field
                   type="text"
