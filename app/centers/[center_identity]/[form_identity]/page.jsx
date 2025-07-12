@@ -143,7 +143,7 @@ function FeedbackFormDetail({ params }) {
             </Button>
 
             {feedbackForm?.questions?.length > 0 && (
-              <Button asChild>
+              <Button asChild variant="outline">
                 <a
                   href={`/feedback/${feedbackForm?.form_identity}`}
                   target="_blank"
@@ -161,7 +161,7 @@ function FeedbackFormDetail({ params }) {
               Update
             </Button>
 
-            <Button asChild>
+            <Button asChild variant="outline">
               <a
                 href={`/reports/${feedbackForm?.form_identity}`}
                 target="_blank"
@@ -175,7 +175,7 @@ function FeedbackFormDetail({ params }) {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-3 mt-3">
         <StatsCard
           title="Total Reviews"
           value={feedbackForm?.total_submissions || 0}
