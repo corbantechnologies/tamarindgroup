@@ -109,7 +109,6 @@ function MakeBooking({ event, closeModal, refetchEvent }) {
                   `/api/v1/bookings/create/event/`,
                   formData
                 );
-                console.log(response?.data?.reference);
                 router.push(`/payment/${response?.data?.reference}`);
                 setLoading(false);
                 refetchEvent();

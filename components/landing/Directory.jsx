@@ -9,7 +9,6 @@ function Directory() {
   const [activeTab, setActiveTab] = useState("100");
 
   const handleItemClick = (item) => {
-    console.log("Navigate to detail page for:", item.name, item.id);
     // Implement navigation to detail page (e.g., using Next.js router)
   };
 

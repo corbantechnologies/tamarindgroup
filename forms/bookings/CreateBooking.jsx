@@ -137,7 +137,6 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 formData.append("phone", values.phone);
 
                 const createResponse = await createBooking(formData);
-                console.log("createBooking response:", createResponse); // Debug full response
                 const bookingReference = createResponse?.data?.reference;
 
                 if (!bookingReference) {
