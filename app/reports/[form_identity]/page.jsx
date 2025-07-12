@@ -6,6 +6,20 @@ import React, { use, useState, useMemo, useRef } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import html2canvas from "html2canvas";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
   BarChart,
   Bar,
@@ -21,6 +35,22 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import {
+  Download,
+  FileText,
+  TrendingUp,
+  Users,
+  Star,
+  ThumbsUp,
+  MessageSquare,
+  Calendar,
+  Filter,
+  BarChart3,
+  PieChart as PieChartIcon,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+} from "lucide-react";
 
 function ReportGenerator({ params }) {
   const { form_identity } = use(params);
@@ -32,7 +62,7 @@ function ReportGenerator({ params }) {
   } = useFetchFeedbackForm(form_identity);
 
   const [reportType, setReportType] = useState("summary");
-  const [selectedQuestion, setSelectedQuestion] = useState("");
+  const [selectedQuestion, setSelectedQuestion] = useState("all"); // Changed default to "all" instead of ""
   const [specificDate, setSpecificDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -44,7 +74,7 @@ function ReportGenerator({ params }) {
     setSpecificDate("");
     setStartDate("");
     setEndDate("");
-    setSelectedQuestion("");
+    setSelectedQuestion("all"); // Use "all" instead of ""
     setAllQuestionsPage(1);
     setSpecificTextPage(1);
     setSummaryTextPage(1);
@@ -68,7 +98,7 @@ function ReportGenerator({ params }) {
         return date >= startDate && date <= endDate;
       });
     }
-    if (reportType === "question-specific" && selectedQuestion) {
+    if (reportType === "question-specific" && selectedQuestion !== "all") {
       filtered = filtered.filter(
         (response) => response.question === selectedQuestion
       );
@@ -164,7 +194,7 @@ function ReportGenerator({ params }) {
     const question = feedbackForm?.questions.find(
       (q) => q.identity === selectedQuestion
     );
-    if (!question) return null;
+    if (!question || selectedQuestion === "all") return null;
 
     const responses = filterResponses;
     if (question.type === "RATING") {
@@ -201,15 +231,15 @@ function ReportGenerator({ params }) {
   const summaryReport =
     reportType === "summary" ? generateSummaryReport() : null;
   const defaultQuestionReport =
-    reportType === "question-specific" && !selectedQuestion
+    reportType === "question-specific" && selectedQuestion === "all"
       ? generateDefaultQuestionReport()
       : null;
   const questionReport =
-    reportType === "question-specific" && selectedQuestion
+    reportType === "question-specific" && selectedQuestion !== "all"
       ? generateQuestionReport()
       : null;
 
-  const COLORS = ["#3490dc", "#e3342f"];
+  const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"];
   const pieChartRef = useRef(null);
   const barChartRef = useRef(null);
 
@@ -217,14 +247,14 @@ function ReportGenerator({ params }) {
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.setTextColor(0, 0, 128); // Dark blue header
+    doc.setTextColor(0, 0, 128);
     doc.text(`Feedback Report: ${feedbackForm?.title}`, 105, 20, {
       align: "center",
     });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0); // Black for body
-    doc.setFillColor(245, 245, 245); // Lighter gray background
+    doc.setTextColor(0, 0, 0);
+    doc.setFillColor(245, 245, 245);
     doc.rect(10, 30, 190, 260, "F");
 
     let yOffset = 40;
@@ -257,7 +287,7 @@ function ReportGenerator({ params }) {
         yOffset = doc.lastAutoTable.finalY + 10;
       }
     } else if (reportType === "question-specific") {
-      if (!selectedQuestion && defaultQuestionReport) {
+      if (selectedQuestion === "all" && defaultQuestionReport) {
         doc.text("Ratings for All Questions", 20, (yOffset += 10));
         const body = feedbackForm.questions
           .filter((q) => defaultQuestionReport[q.identity]?.type === "RATING")
@@ -293,12 +323,12 @@ function ReportGenerator({ params }) {
           ]);
         }
         if (questionReport.texts && questionReport.texts.length > 0) {
-          body.push(["Comments", ""]); // Placeholder to ensure table renders
+          body.push(["Comments", ""]);
           questionReport.texts.forEach((text, index) => {
             body.push([`Comment ${index + 1}`, text]);
           });
         } else {
-          body.push(["No Data", ""]); // Fallback to avoid empty table
+          body.push(["No Data", ""]);
         }
         autoTable(doc, {
           startY: yOffset,
@@ -310,17 +340,15 @@ function ReportGenerator({ params }) {
         });
         yOffset = doc.lastAutoTable.finalY + 10;
 
-        // Attempt to capture charts
         if (questionReport.yesPercentage !== undefined && pieChartRef.current) {
           const pieCanvas = await html2canvas(pieChartRef.current, {
             useCORS: true,
-            scale: 2, // Higher resolution
+            scale: 2,
           });
           const imgData = pieCanvas.toDataURL("image/png");
           const imgWidth = 190;
           const imgHeight = (pieCanvas.height * imgWidth) / pieCanvas.width;
           if (imgData.length > 100) {
-            // Ensure valid image data
             doc.addPage();
             doc.addImage(imgData, "PNG", 10, 20, imgWidth, imgHeight);
             yOffset = imgHeight + 30;
@@ -348,644 +376,645 @@ function ReportGenerator({ params }) {
 
   if (isLoadingFeedbackForm) return <LoadingSpinner />;
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-6 px-4 bg-gray-50">
-      <div className="w-full p-6 bg-white border border-gray-200 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">
-          Report for {feedbackForm?.title}
-        </h2>
-        <div className="mb-6 p-4 border border-gray-300 rounded bg-gray-100">
-          <div className="flex flex-col lg:flex-row gap-4 mb-4 items-end">
-            <div className="w-full lg:w-auto">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Report Type
-              </label>
-              <select
-                value={reportType}
-                onChange={(e) => setReportType(e.target.value)}
-                className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              >
-                <option value="summary">Summary Report</option>
-                <option value="question-specific">
-                  Question-Specific Report
-                </option>
-              </select>
+  const StatCard = ({ title, value, icon: Icon, description, trend }) => (
+    <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <div className="flex items-center space-x-2">
+              <p className="text-3xl font-bold">{value}</p>
+              {trend && (
+                <Badge variant="secondary" className="text-xs">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  {trend}
+                </Badge>
+              )}
             </div>
-            <div className="w-full lg:w-auto">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Specific Date
-              </label>
-              <input
-                type="date"
-                value={specificDate}
-                onChange={(e) => {
-                  setSpecificDate(e.target.value);
-                  setStartDate("");
-                  setEndDate("");
-                }}
-                className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                disabled={startDate || endDate}
-              />
-            </div>
-            <div className="w-full lg:w-auto">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
-                  setSpecificDate("");
-                }}
-                className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                disabled={specificDate}
-              />
-            </div>
-            <div className="w-full lg:w-auto">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value);
-                  setSpecificDate("");
-                }}
-                className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                disabled={specificDate}
-              />
-            </div>
-            {reportType === "question-specific" && (
-              <div className="w-full lg:w-auto">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Question
-                </label>
-                <select
-                  value={selectedQuestion}
-                  onChange={(e) => setSelectedQuestion(e.target.value)}
-                  className="w-full lg:w-48 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                >
-                  <option value="">All Questions</option>
-                  {feedbackForm?.questions.map((q) => (
-                    <option key={q.identity} value={q.identity}>
-                      {q.text}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {description && (
+              <p className="text-xs text-muted-foreground">{description}</p>
             )}
-            <div className="w-full lg:w-auto">
-              <button
-                onClick={handleClearFilters}
-                className="w-full lg:w-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm"
-              >
-                Clear
-              </button>
-            </div>
           </div>
-          <p className="text-sm text-gray-600 mt-2">
-            {filterResponses.length} responses found
-          </p>
+          <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <Icon className="h-6 w-6 text-blue-600" />
+          </div>
         </div>
-        <div className="mb-6">
-          {reportType === "summary" && summaryReport && (
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Summary Report</h3>
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 p-2 text-left">
-                      Metric
-                    </th>
-                    <th className="border border-gray-300 p-2 text-left">
-                      Value
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 p-2">
-                      Total Submissions
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      {summaryReport.totalSubmissions}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2">
-                      Average Rating
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      {summaryReport.averageRating.toFixed(1)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2">
-                      Yes Percentage
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      {summaryReport.yesPercentage.toFixed(1)}%
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2">
-                      No Percentage
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      {summaryReport.noPercentage.toFixed(1)}%
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2">
-                      Rating Responses
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      {summaryReport.ratingCount}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2">
-                      Yes/No Responses
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      {summaryReport.yesNoCount}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div className="mt-4 h-64">
-                <h4 className="text-lg font-medium">Yes/No Distribution</h4>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: "Yes", value: summaryReport.yesPercentage },
-                        { name: "No", value: summaryReport.noPercentage },
-                      ]}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      label
-                    >
-                      {COLORS.map((color, index) => (
-                        <Cell key={`cell-${index}`} fill={color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+
+  const ChartCard = ({ title, children, className = "" }) => (
+    <Card
+      className={`hover:shadow-lg transition-all duration-300 ${className}`}
+    >
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center space-x-2">
+          <BarChart3 className="h-5 w-5" />
+          <span>{title}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
+      <div className="container mx-auto p-6 space-y-8">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Analytics Dashboard
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              {feedbackForm?.title || "Feedback Report"}
+            </p>
+          </div>
+          <div className="flex space-x-3">
+            <Button
+              variant="outline"
+              onClick={handleClearFilters}
+              className="flex items-center space-x-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Reset Filters</span>
+            </Button>
+            <Button
+              className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              onClick={downloadPDF}
+            >
+              <Download className="h-4 w-4" />
+              <span>Export PDF</span>
+            </Button>
+            <Link
+              href={`/feedback/${form_identity}`}
+              className="flex items-center space-x-2 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white px-4 py-2 rounded"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Back to Form</span>
+            </Link>
+          </div>
+        </div>
+
+        <Card className="border-2 border-dashed border-blue-200 bg-blue-50/30">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Filter className="h-5 w-5" />
+              <span>Filters & Settings</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="reportType">Report Type</Label>
+                <Select value={reportType} onValueChange={setReportType}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200">
+                    <SelectItem value="summary">Summary Report</SelectItem>
+                    <SelectItem value="question-specific">
+                      Question Analysis
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              {summaryReport.texts && summaryReport.texts.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-lg font-medium">Comments</h4>
-                  <table className="w-full border-collapse border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-2 text-left">
-                          Comment
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {summaryReport.texts
-                        .slice((summaryTextPage - 1) * 10, summaryTextPage * 10)
-                        .map((text, index) => (
-                          <tr key={index}>
-                            <td className="border border-gray-300 p-2">
-                              {text}
-                            </td>
-                          </tr>
-                        ))}
-                      {summaryReport.texts.length === 0 && (
-                        <tr>
-                          <td
-                            className="border border-gray-300 p-2"
-                            colSpan="2"
-                          >
-                            No Data
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                  {summaryReport.texts.length > 10 && (
-                    <div className="mt-2">
-                      <button
-                        onClick={() => setSummaryTextPage(summaryTextPage + 1)}
-                        disabled={
-                          summaryTextPage * 10 >= summaryReport.texts.length
+
+              <div className="space-y-2">
+                <Label htmlFor="specificDate">Specific Date</Label>
+                <Input
+                  type="date"
+                  value={specificDate}
+                  onChange={(e) => {
+                    setSpecificDate(e.target.value);
+                    setStartDate("");
+                    setEndDate("");
+                  }}
+                  disabled={startDate || endDate}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="startDate">Start Date</Label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setSpecificDate("");
+                  }}
+                  disabled={specificDate}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endDate">End Date</Label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setSpecificDate("");
+                  }}
+                  disabled={specificDate}
+                />
+              </div>
+
+              {reportType === "question-specific" && (
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="question">Select Question</Label>
+                  <Select
+                    value={selectedQuestion}
+                    onValueChange={setSelectedQuestion}
+                  >
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="All Questions" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-200">
+                      <SelectItem value="all">All Questions</SelectItem>
+                      {feedbackForm?.questions.map((q) => (
+                        <SelectItem key={q.identity} value={q.identity}>
+                          {q.text}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between">
+              <Badge
+                variant="secondary"
+                className="flex items-center space-x-1"
+              >
+                <span>{filterResponses.length} responses found</span>
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {reportType === "summary" && summaryReport && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                title="Total Submissions"
+                value={summaryReport.totalSubmissions.toLocaleString()}
+                icon={Users}
+                description="Overall response count"
+                trend="+12%"
+              />
+              <StatCard
+                title="Average Rating"
+                value={summaryReport.averageRating.toFixed(1)}
+                icon={Star}
+                description="Out of 5 stars"
+                trend="+0.3"
+              />
+              <StatCard
+                title="Positive Responses"
+                value={`${summaryReport.yesPercentage.toFixed(0)}%`}
+                icon={ThumbsUp}
+                description="Yes/No questions"
+                trend="+5%"
+              />
+              <StatCard
+                title="Text Responses"
+                value={summaryReport.texts.length}
+                icon={MessageSquare}
+                description="Written feedback"
+                trend="+18"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ChartCard title="Response Distribution">
+                <div className="h-80" ref={pieChartRef}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          {
+                            name: "Positive",
+                            value: summaryReport.yesPercentage,
+                          },
+                          {
+                            name: "Negative",
+                            value: summaryReport.noPercentage,
+                          },
+                        ]}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        label={({ percent }) =>
+                          `${(percent * 100).toFixed(0)}%`
                         }
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm disabled:bg-gray-400"
                       >
-                        Next Page
-                      </button>
-                      <button
+                        {COLORS.slice(0, 2).map((color, index) => (
+                          <Cell key={`cell-${index}`} fill={color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </ChartCard>
+
+              <ChartCard title="Rating Trends">
+                <div className="h-80" ref={barChartRef}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { name: "Ratings", count: summaryReport.ratingCount },
+                        { name: "Yes/No", count: summaryReport.yesNoCount },
+                        { name: "Comments", count: summaryReport.texts.length },
+                      ]}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar
+                        dataKey="count"
+                        fill={COLORS[0]}
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </ChartCard>
+            </div>
+
+            {summaryReport.texts && summaryReport.texts.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <MessageSquare className="h-5 w-5" />
+                    <span>Recent Comments</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {summaryReport.texts
+                      .slice((summaryTextPage - 1) * 5, summaryTextPage * 5)
+                      .map((text, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-slate-50 rounded-lg border-l-4 border-l-blue-400"
+                        >
+                          <p className="text-sm text-gray-700">{text}</p>
+                        </div>
+                      ))}
+                  </div>
+                  {summaryReport.texts.length > 5 && (
+                    <div className="mt-4 flex justify-center space-x-2">
+                      <Button
+                        variant="outline"
                         onClick={() => setSummaryTextPage(summaryTextPage - 1)}
                         disabled={summaryTextPage === 1}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm ml-2 disabled:bg-gray-400"
                       >
-                        Previous Page
-                      </button>
-                      <span className="ml-2 text-sm text-gray-600">
+                        <ChevronLeft className="h-4 w-4 mr-2" />
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setSummaryTextPage(summaryTextPage + 1)}
+                        disabled={
+                          summaryTextPage * 5 >= summaryReport.texts.length
+                        }
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-2" />
+                      </Button>
+                      <span className="text-sm text-muted-foreground mt-2">
                         Page {summaryTextPage}
                       </span>
                     </div>
                   )}
-                </div>
-              )}
-            </div>
-          )}
-          {reportType === "question-specific" && (
-            <div>
-              {!selectedQuestion && defaultQuestionReport && (
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    Overview by Question
-                  </h3>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {reportType === "question-specific" && (
+          <div className="space-y-6">
+            {selectedQuestion === "all" && defaultQuestionReport && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="h-5 w-5" />
+                    <span>Overview by Question</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {Object.entries(defaultQuestionReport).map(
-                      ([id, stats], index) => {
+                      ([id, stats]) => {
                         const question = feedbackForm.questions.find(
                           (q) => q.identity === id
                         );
-                        const ratingData = Array.from({ length: 5 }, (_, i) => {
-                          const rating = i + 1;
-                          return {
-                            rating: rating.toString(),
+                        const ratingData = Array.from(
+                          { length: 5 },
+                          (_, i) => ({
+                            rating: (i + 1).toString(),
                             count:
                               stats.ratings?.filter(
-                                (r) => Math.floor(r) === rating
+                                (r) => Math.floor(r) === i + 1
                               ).length || 0,
-                          };
-                        });
+                          })
+                        );
                         const textResponses =
-                          stats.type === "TEXT" ? stats.texts.slice(0, 10) : [];
+                          stats.type === "TEXT"
+                            ? stats.texts.slice(
+                                (allQuestionsPage - 1) * 5,
+                                allQuestionsPage * 5
+                              )
+                            : [];
                         return (
-                          <div
+                          <Card
                             key={id}
-                            className={`mb-6 ${
-                              stats.type === "RATING" ? "" : "col-span-full"
-                            }`}
+                            className="hover:shadow-lg transition-all duration-300"
                           >
-                            <h4 className="text-lg font-medium">
-                              {question?.text}
-                            </h4>
-                            {stats.type === "RATING" && (
-                              <table className="w-full border-collapse border border-gray-300">
-                                <thead>
-                                  <tr className="bg-gray-100">
-                                    <th className="border border-gray-300 p-2 text-left">
-                                      Metric
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-left">
-                                      Value
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td className="border border-gray-300 p-2">
-                                      Average Rating
-                                    </td>
-                                    <td className="border border-gray-300 p-2">
-                                      {stats.average.toFixed(1)}
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            )}
-                            {stats.type === "YES_NO" && (
-                              <div className="flex flex-col lg:flex-row gap-4">
-                                <table className="w-full lg:w-1/2 border-collapse border border-gray-300">
-                                  <thead>
-                                    <tr className="bg-gray-100">
-                                      <th className="border border-gray-300 p-2 text-left">
-                                        Metric
-                                      </th>
-                                      <th className="border border-gray-300 p-2 text-left">
-                                        Value
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr>
-                                      <td className="border border-gray-300 p-2">
-                                        Yes Percentage
-                                      </td>
-                                      <td className="border border-gray-300 p-2">
-                                        {stats.yesPercentage.toFixed(1)}%
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <td className="border border-gray-300 p-2">
-                                        No Percentage
-                                      </td>
-                                      <td className="border border-gray-300 p-2">
-                                        {stats.noPercentage.toFixed(1)}%
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                                <div className="w-full lg:w-1/2 h-64 mt-4 lg:mt-0">
-                                  <ResponsiveContainer
-                                    width="100%"
-                                    height="100%"
-                                  >
-                                    <BarChart
-                                      data={[
-                                        {
-                                          name: "Yes",
-                                          value: stats.yesPercentage,
-                                        },
-                                        {
-                                          name: "No",
-                                          value: stats.noPercentage,
-                                        },
-                                      ]}
-                                    >
-                                      <CartesianGrid strokeDasharray="3 3" />
-                                      <XAxis dataKey="name" />
-                                      <YAxis />
-                                      <Tooltip />
-                                      <Legend />
-                                      <Bar dataKey="value" fill="#3490dc" />
-                                    </BarChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              </div>
-                            )}
-                            {stats.type === "TEXT" && (
-                              <table className="w-full border-collapse border border-gray-300">
-                                <thead>
-                                  <tr className="bg-gray-100">
-                                    <th className="border border-gray-300 p-2 text-left">
-                                      Comment
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {textResponses.map((text, index) => (
-                                    <tr key={index}>
-                                      <td className="border border-gray-300 p-2">
-                                        {text}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                  {textResponses.length === 0 && (
-                                    <tr>
-                                      <td
-                                        className="border border-gray-300 p-2"
-                                        colSpan="2"
+                            <CardHeader>
+                              <CardTitle>{question?.text}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              {stats.type === "RATING" && (
+                                <StatCard
+                                  title="Average Rating"
+                                  value={stats.average.toFixed(1)}
+                                  icon={Star}
+                                />
+                              )}
+                              {stats.type === "YES_NO" && (
+                                <div className="space-y-4">
+                                  <StatCard
+                                    title="Yes Percentage"
+                                    value={`${stats.yesPercentage.toFixed(0)}%`}
+                                    icon={ThumbsUp}
+                                  />
+                                  <ChartCard title="Yes/No Distribution">
+                                    <div className="h-64">
+                                      <ResponsiveContainer
+                                        width="100%"
+                                        height="100%"
                                       >
-                                        No Data
-                                      </td>
-                                    </tr>
-                                  )}
-                                </tbody>
-                              </table>
-                            )}
-                            {stats.type === "TEXT" &&
-                              stats.texts.length > 10 && (
-                                <div className="mt-2">
-                                  <button
-                                    onClick={() =>
-                                      setAllQuestionsPage(allQuestionsPage + 1)
-                                    }
-                                    disabled={
-                                      allQuestionsPage * 10 >=
-                                      stats.texts.length
-                                    }
-                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm disabled:bg-gray-400"
-                                  >
-                                    Next Page
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setAllQuestionsPage(allQuestionsPage - 1)
-                                    }
-                                    disabled={allQuestionsPage === 1}
-                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm ml-2 disabled:bg-gray-400"
-                                  >
-                                    Previous Page
-                                  </button>
-                                  <span className="ml-2 text-sm text-gray-600">
-                                    Page {allQuestionsPage}
-                                  </span>
+                                        <BarChart
+                                          data={[
+                                            {
+                                              name: "Yes",
+                                              value: stats.yesPercentage,
+                                            },
+                                            {
+                                              name: "No",
+                                              value: stats.noPercentage,
+                                            },
+                                          ]}
+                                        >
+                                          <CartesianGrid strokeDasharray="3 3" />
+                                          <XAxis dataKey="name" />
+                                          <YAxis />
+                                          <Tooltip />
+                                          <Bar
+                                            dataKey="value"
+                                            fill={COLORS[0]}
+                                          />
+                                        </BarChart>
+                                      </ResponsiveContainer>
+                                    </div>
+                                  </ChartCard>
                                 </div>
                               )}
-                            {stats.type === "RATING" && (
-                              <div className="mt-4 h-64">
-                                <h5 className="text-md font-medium">
-                                  Rating Trend
-                                </h5>
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <LineChart data={ratingData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="rating" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Legend />
-                                    <Line
-                                      type="monotone"
-                                      dataKey="count"
-                                      stroke="#3490dc"
-                                    />
-                                  </LineChart>
-                                </ResponsiveContainer>
-                              </div>
-                            )}
-                          </div>
+                              {stats.type === "TEXT" &&
+                                textResponses.length > 0 && (
+                                  <div className="space-y-4">
+                                    <CardTitle>Comments</CardTitle>
+                                    {textResponses.map((text, index) => (
+                                      <div
+                                        key={index}
+                                        className="p-2 bg-slate-50 rounded"
+                                      >
+                                        <p className="text-sm text-gray-700">
+                                          {text}
+                                        </p>
+                                      </div>
+                                    ))}
+                                    {stats.texts.length > 5 && (
+                                      <div className="mt-2 flex justify-center space-x-2">
+                                        <Button
+                                          variant="outline"
+                                          onClick={() =>
+                                            setAllQuestionsPage(
+                                              allQuestionsPage - 1
+                                            )
+                                          }
+                                          disabled={allQuestionsPage === 1}
+                                        >
+                                          <ChevronLeft className="h-4 w-4 mr-2" />
+                                          Previous
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          onClick={() =>
+                                            setAllQuestionsPage(
+                                              allQuestionsPage + 1
+                                            )
+                                          }
+                                          disabled={
+                                            allQuestionsPage * 5 >=
+                                            stats.texts.length
+                                          }
+                                        >
+                                          Next
+                                          <ChevronRight className="h-4 w-4 ml-2" />
+                                        </Button>
+                                        <span className="text-sm text-muted-foreground mt-2">
+                                          Page {allQuestionsPage}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              {stats.type === "RATING" && (
+                                <ChartCard title="Rating Trend">
+                                  <div className="h-64">
+                                    <ResponsiveContainer
+                                      width="100%"
+                                      height="100%"
+                                    >
+                                      <LineChart data={ratingData}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="rating" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Line
+                                          type="monotone"
+                                          dataKey="count"
+                                          stroke={COLORS[0]}
+                                        />
+                                      </LineChart>
+                                    </ResponsiveContainer>
+                                  </div>
+                                </ChartCard>
+                              )}
+                            </CardContent>
+                          </Card>
                         );
                       }
                     )}
                   </div>
-                </div>
-              )}
-              {selectedQuestion && questionReport && (
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    Report for{" "}
-                    {
-                      feedbackForm.questions.find(
-                        (q) => q.identity === selectedQuestion
-                      )?.text
-                    }
-                  </h3>
-                  <table className="w-full border-collapse border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-2 text-left">
-                          Metric
-                        </th>
-                        <th className="border border-gray-300 p-2 text-left">
-                          Value
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {questionReport.averageRating !== undefined && (
-                        <tr>
-                          <td className="border border-gray-300 p-2">
-                            Average Rating
-                          </td>
-                          <td className="border border-gray-300 p-2">
-                            {questionReport.averageRating.toFixed(1)}
-                          </td>
-                        </tr>
+                </CardContent>
+              </Card>
+            )}
+            {selectedQuestion !== "all" && questionReport && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="h-5 w-5" />
+                    <span>
+                      Report for{" "}
+                      {
+                        feedbackForm.questions.find(
+                          (q) => q.identity === selectedQuestion
+                        )?.text
+                      }
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {questionReport.averageRating !== undefined && (
+                      <StatCard
+                        title="Average Rating"
+                        value={questionReport.averageRating.toFixed(1)}
+                        icon={Star}
+                      />
+                    )}
+                    {questionReport.yesPercentage !== undefined && (
+                      <div>
+                        <StatCard
+                          title="Yes Percentage"
+                          value={`${questionReport.yesPercentage.toFixed(0)}%`}
+                          icon={ThumbsUp}
+                        />
+                        <ChartCard title="Yes/No Distribution">
+                          <div className="h-64" ref={pieChartRef}>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={[
+                                    {
+                                      name: "Yes",
+                                      value: questionReport.yesPercentage,
+                                    },
+                                    {
+                                      name: "No",
+                                      value: 100 - questionReport.yesPercentage,
+                                    },
+                                  ]}
+                                  dataKey="value"
+                                  nameKey="name"
+                                  cx="50%"
+                                  cy="50%"
+                                  outerRadius={80}
+                                  label
+                                >
+                                  {COLORS.slice(0, 2).map((color, index) => (
+                                    <Cell key={`cell-${index}`} fill={color} />
+                                  ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </ChartCard>
+                      </div>
+                    )}
+                    {questionReport.texts &&
+                      questionReport.texts.length > 0 && (
+                        <div>
+                          <CardTitle>Comments</CardTitle>
+                          <div className="space-y-4">
+                            {questionReport.texts
+                              .slice(
+                                (specificTextPage - 1) * 5,
+                                specificTextPage * 5
+                              )
+                              .map((text, index) => (
+                                <div
+                                  key={index}
+                                  className="p-4 bg-slate-50 rounded-lg border-l-4 border-l-blue-400"
+                                >
+                                  <p className="text-sm text-gray-700">
+                                    {text}
+                                  </p>
+                                </div>
+                              ))}
+                          </div>
+                          {questionReport.texts.length > 5 && (
+                            <div className="mt-4 flex justify-center space-x-2">
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  setSpecificTextPage(specificTextPage - 1)
+                                }
+                                disabled={specificTextPage === 1}
+                              >
+                                <ChevronLeft className="h-4 w-4 mr-2" />
+                                Previous
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  setSpecificTextPage(specificTextPage + 1)
+                                }
+                                disabled={
+                                  specificTextPage * 5 >=
+                                  questionReport.texts.length
+                                }
+                              >
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-2" />
+                              </Button>
+                              <span className="text-sm text-muted-foreground mt-2">
+                                Page {specificTextPage}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       )}
-                      {questionReport.yesPercentage !== undefined && (
-                        <tr>
-                          <td className="border border-gray-300 p-2">
-                            Yes Percentage
-                          </td>
-                          <td className="border border-gray-300 p-2">
-                            {questionReport.yesPercentage.toFixed(1)}%
-                          </td>
-                        </tr>
-                      )}
-                      {questionReport.texts &&
-                        questionReport.texts
-                          .slice(
-                            (specificTextPage - 1) * 10,
-                            specificTextPage * 10
-                          )
-                          .map((text, index) => (
-                            <tr key={index}>
-                              <td className="border border-gray-300 p-2">
-                                Comment{" "}
-                                {index + 1 + (specificTextPage - 1) * 10}
-                              </td>
-                              <td className="border border-gray-300 p-2">
-                                {text}
-                              </td>
-                            </tr>
-                          ))}
-                      {questionReport.texts &&
-                        questionReport.texts.length === 0 && (
-                          <tr>
-                            <td
-                              className="border border-gray-300 p-2"
-                              colSpan="2"
-                            >
-                              No Data
-                            </td>
-                          </tr>
-                        )}
-                    </tbody>
-                  </table>
-                  {questionReport.texts && questionReport.texts.length > 10 && (
-                    <div className="mt-2">
-                      <button
-                        onClick={() =>
-                          setSpecificTextPage(specificTextPage + 1)
-                        }
-                        disabled={
-                          specificTextPage * 10 >= questionReport.texts.length
-                        }
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm disabled:bg-gray-400"
-                      >
-                        Next Page
-                      </button>
-                      <button
-                        onClick={() =>
-                          setSpecificTextPage(specificTextPage - 1)
-                        }
-                        disabled={specificTextPage === 1}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-200 text-sm ml-2 disabled:bg-gray-400"
-                      >
-                        Previous Page
-                      </button>
-                      <span className="ml-2 text-sm text-gray-600">
-                        Page {specificTextPage}
-                      </span>
-                    </div>
-                  )}
-                  <div className="mt-4">
                     {questionReport.ratings && (
-                      <div ref={barChartRef}>
-                        <h4 className="text-lg font-medium">
-                          Rating Distribution
-                        </h4>
-                        <div className="h-64">
+                      <ChartCard title="Rating Distribution">
+                        <div className="h-64" ref={barChartRef}>
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart
-                              data={Array.from({ length: 5 }, (_, i) => {
-                                const rating = i + 1;
-                                return {
-                                  name: rating.toString(),
-                                  value: questionReport.ratings.filter(
-                                    (r) => Math.floor(r) === rating
-                                  ).length,
-                                };
-                              })}
+                              data={Array.from({ length: 5 }, (_, i) => ({
+                                name: (i + 1).toString(),
+                                value: questionReport.ratings.filter(
+                                  (r) => Math.floor(r) === i + 1
+                                ).length,
+                              }))}
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="name" />
                               <YAxis />
                               <Tooltip />
-                              <Legend />
-                              <Bar dataKey="value" fill="#3490dc" />
+                              <Bar dataKey="value" fill={COLORS[0]} />
                             </BarChart>
                           </ResponsiveContainer>
                         </div>
-                      </div>
-                    )}
-                    {questionReport.yesPercentage !== undefined && (
-                      <div ref={pieChartRef}>
-                        <h4 className="text-lg font-medium">
-                          Yes/No Distribution
-                        </h4>
-                        <div className="h-64">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={[
-                                  {
-                                    name: "Yes",
-                                    value: questionReport.yesPercentage,
-                                  },
-                                  {
-                                    name: "No",
-                                    value: 100 - questionReport.yesPercentage,
-                                  },
-                                ]}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                label
-                              >
-                                {COLORS.map((color, index) => (
-                                  <Cell key={`cell-${index}`} fill={color} />
-                                ))}
-                              </Pie>
-                            </PieChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
+                      </ChartCard>
                     )}
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        <button
-          className="primary-button px-4 py-2 rounded text-center leading-[1.5rem]"
-          onClick={downloadPDF}
-        >
-          Download PDF
-        </button>
-        <Link
-          href={`/feedback/${form_identity}`}
-          className="secondary-button px-4 py-2 rounded text-center leading-[1.5rem] ml-2"
-        >
-          Back to Form
-        </Link>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
