@@ -215,6 +215,10 @@ function EventDetail({ params }) {
                             <p className="text-sm text-gray-600">
                               {ticket.quantity_available} tickets available
                             </p>
+                          ) : ticket?.is_limited ? (
+                            <p className="text-sm text-gray-600">
+                              Limited tickets available
+                            </p>
                           ) : (
                             <p className="text-sm text-gray-600">
                               Unlimited tickets available
