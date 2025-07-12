@@ -1,15 +1,48 @@
 "use client";
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import StatsCard from "@/components/private/StatsCard";
 import CreateCenter from "@/forms/centers/CreateCenter";
 import { useFetchAccount } from "@/hooks/accounts/actions";
 import { useFetchCenters } from "@/hooks/centers/actions";
+import { useFetchEvents } from "@/hooks/events/actions";
 import { useFetchFeedbackForms } from "@/hooks/feedbackforms/actions";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import {
+  Calendar,
+  Users,
+  MapPin,
+  Phone,
+  Eye,
+  Plus,
+  Activity,
+  DollarSign,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  TrendingUp,
+  BarChart3,
+} from "lucide-react";
+import CenterCard from "@/components/centers/CenterCard";
+import EventsCard from "@/components/events/EventsCard";
+import RevenueChart from "@/components/events/RevenueChart";
+import BookingStatusChart from "@/components/bookings/BookingStatusChart";
 
 function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState("overview");
   const {
     isLoading: isLoadingAccount,
     data: account,
@@ -28,115 +61,292 @@ function AdminDashboard() {
     refetch: refetchFeedbackForms,
   } = useFetchFeedbackForms();
 
+  const {
+    isLoading: isLoadingEvents,
+    data: events,
+    refetch: refetchEvents,
+  } = useFetchEvents();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  console.log(centers);
-
-  if (isLoadingAccount || isLoadingCenters || isLoadingFeedbackForms) {
+  if (
+    isLoadingAccount ||
+    isLoadingCenters ||
+    isLoadingFeedbackForms ||
+    isLoadingEvents
+  ) {
     return <LoadingSpinner />;
   }
 
+  // Calculate statistics
+  const stats = useMemo(() => {
+    const totalBookings = events.reduce(
+      (acc, event) =>
+        acc +
+        event.ticket_types.reduce(
+          (typeAcc, type) => typeAcc + type.bookings.length,
+          0
+        ),
+      0
+    );
+
+    const confirmedBookings = events.reduce(
+      (acc, event) =>
+        acc +
+        event.ticket_types.reduce(
+          (typeAcc, type) =>
+            typeAcc +
+            type.bookings.filter((b) => b.status === "CONFIRMED").length,
+          0
+        ),
+      0
+    );
+
+    const totalRevenue = events.reduce(
+      (acc, event) =>
+        acc +
+        event.ticket_types.reduce(
+          (typeAcc, type) =>
+            typeAcc +
+            type.bookings
+              .filter((b) => b.payment_status === "Completed")
+              .reduce(
+                (bookingAcc, booking) =>
+                  bookingAcc + parseFloat(booking.amount),
+                0
+              ),
+          0
+        ),
+      0
+    );
+
+    const conversionRate =
+      totalBookings > 0 ? (confirmedBookings / totalBookings) * 100 : 0;
+
+    return {
+      totalBookings,
+      confirmedBookings,
+      totalRevenue,
+      conversionRate,
+    };
+  }, []);
+
   return (
-    <div className="container mx-auto p-4">
-      <section className="mb-3">
-        <h2 className="text-2xl font-bold">Hello {account?.name}</h2>
-      </section>
-
-      <section id="summary" className="mb-3 mt-3">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded shadow">
-            <h4 className="font-bold">Information</h4>
-            <p>{account?.name}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="container mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Welcome back, {account.name}
+            </h1>
+            <p className="text-slate-600 mt-2">
+              Here's what's happening with your events today.
+            </p>
           </div>
-          <div className="bg-white p-4 rounded shadow">
-            <h4 className="font-bold">Total Centers</h4>
-            <p>{centers?.length || 0}</p>
-          </div>
-          <div className="bg-white p-4 rounded shadow">
-            <h4 className="font-bold">Feedback Forms</h4>
-            <p>{feedbackForms?.length || 0}</p>
+          <div className="flex gap-3">
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Event
+            </Button>
+            <Button variant="outline">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Center
+            </Button>
           </div>
         </div>
-      </section>
 
-      <section className="mb-3 mt-3 py-3">
-        <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
-          <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
-            <h6 className="text-xl font-semibold">Centers</h6>
-            <button
-              className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
-              onClick={() => setIsModalOpen(true)}
-            >
-              Create Center
-            </button>
-          </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatsCard
+            title="Total Bookings"
+            value={stats.totalBookings}
+            icon={Users}
+            trend={12}
+            color="blue"
+          />
+          <StatsCard
+            title="Revenue"
+            value={`KES ${stats.totalRevenue.toFixed(2)}`}
+            icon={DollarSign}
+            trend={8}
+            color="green"
+          />
+          <StatsCard
+            title="Conversion Rate"
+            value={`${stats.conversionRate.toFixed(1)}%`}
+            icon={TrendingUp}
+            trend={-2}
+            color="purple"
+          />
+          <StatsCard
+            title="Active Centers"
+            value={centers.length}
+            icon={MapPin}
+            trend={0}
+            color="orange"
+          />
+        </div>
 
-          {centers?.length > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full table-auto border rounded border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-200 text-gray-700 text-sm">
-                      <th className="border border-gray-300 px-4 py-2">Name</th>
-                      <th className="border border-gray-300 px-4 py-2">
-                        Phone
-                      </th>
-                      <th className="border border-gray-300 px-4 py-2">
-                        Location
-                      </th>
-                      <th className="border border-gray-300 px-4 py-2">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {centers?.map((center) => (
-                      <tr key={center.reference}>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {center?.name}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {center?.contact}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {center?.location}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          <Link
-                            href={`/centers/${center?.center_identity}`}
-                            className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
-                          >
-                            View
-                          </Link>
-                        </td>
-                      </tr>
+        {/* Main Content Tabs */}
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
+          <TabsList className="grid w-full lg:w-fit grid-cols-4 lg:grid-cols-4">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="events" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Events
+            </TabsTrigger>
+            <TabsTrigger value="centers" className="flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              Centers
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              Analytics
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <RevenueChart />
+              <BookingStatusChart />
+            </div>
+
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
+                  Recent Activity
+                </CardTitle>
+                <CardDescription>Latest bookings and updates</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {events[0].ticket_types[0].bookings
+                    .slice(0, 3)
+                    .map((booking, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">{booking.name}</p>
+                            <p className="text-sm text-slate-600">
+                              Booked {booking.quantity} tickets
+                            </p>
+                          </div>
+                        </div>
+                        <Badge
+                          variant={
+                            booking.status === "CONFIRMED"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {booking.status}
+                        </Badge>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          ) : (
-            <div className="p-3 w-full bg-blue-100">No centers available</div>
-          )}
-        </div>
-      </section>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              onClick={() => setIsModalOpen(false)}
-            >
-              ✕
-            </button>
-            <CreateCenter
-              refetch={refetchCenters}
-              closeModal={() => setIsModalOpen(false)}
-            />
-          </div>
-        </div>
-      )}
+          <TabsContent value="events" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Events Management</h2>
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Event
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {events.map((event, index) => (
+                <EventsCard key={index} event={event} />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="centers" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Centers Management</h2>
+              <Button variant="outline">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Center
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {centers.map((center, index) => (
+                <CenterCard key={index} center={center} />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Event Performance</CardTitle>
+                  <CardDescription>Booking trends over time</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Sample Event</span>
+                      <span className="text-sm text-slate-600">
+                        19 bookings
+                      </span>
+                    </div>
+                    <Progress value={75} className="h-2" />
+                    <div className="flex justify-between text-xs text-slate-600">
+                      <span>75% of capacity</span>
+                      <span>100 total capacity</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue Breakdown</CardTitle>
+                  <CardDescription>Revenue by ticket type</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">
+                        General Admission
+                      </span>
+                      <span className="text-sm font-semibold">KES 6.00</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">VIP</span>
+                      <span className="text-sm font-semibold">KES 10.00</span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between items-center font-semibold">
+                        <span>Total Revenue</span>
+                        <span>KES 16.00</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

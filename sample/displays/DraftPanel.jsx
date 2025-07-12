@@ -19,7 +19,6 @@ function FeedbackFormDetail({ params }) {
     refetch: refetchFeedbacksByFeedbackForm,
   } = useFetchFeedbacksByFeedbackForm(form_identity);
 
-  console.log(feedbacks);
 
   if (isLoadingFeedbackForm || isLoadingFeedbacksByFeedbackForm) {
     return <LoadingSpinner />;
