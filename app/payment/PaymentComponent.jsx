@@ -164,7 +164,7 @@ function PayBooking() {
               disabled={loading}
               className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 disabled:bg-red-400"
             >
-              {loading ? <LoadingSpinner /> : "Pay with Pesapal"}
+              {loading ? "Processing Payment..." : "Pay with Pesapal"}
             </button>
           </div>
         </div>
