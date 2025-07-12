@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Phone, FileText, Star, Eye } from "lucide-react";
-
+import { useRouter } from "next/navigation";
 
 const CenterCard = ({ center }) => {
   const totalForms = center.feedback_forms.length;
+  const router = useRouter();
   const avgRating =
     center.feedback_forms.reduce((acc, form) => acc + form.average_rating, 0) /
       totalForms || 0;
@@ -56,7 +57,8 @@ const CenterCard = ({ center }) => {
           <Button
             size="sm"
             variant="outline"
-            className="group-hover:bg-blue-50 group-hover:border-blue-200"
+            className="group-hover:bg-blue-50 group-hover:border-blue-200 hover cursor-pointer"
+            onClick={() => router.push(`/centers/${center.center_identity}`)}
           >
             <Eye className="w-4 h-4 mr-2" />
             Manage

@@ -165,28 +165,28 @@ function AdminDashboard() {
             title="Total Bookings"
             value={stats.totalBookings}
             icon={Users}
-            trend={12}
+            // trend={12}
             color="blue"
           />
           <StatsCard
             title="Revenue"
             value={`KES ${stats.totalRevenue.toFixed(2)}`}
             icon={DollarSign}
-            trend={8}
+            // trend={8}
             color="green"
           />
           <StatsCard
             title="Conversion Rate"
             value={`${stats.conversionRate.toFixed(1)}%`}
             icon={TrendingUp}
-            trend={-2}
+            // trend={-2}
             color="purple"
           />
           <StatsCard
             title="Active Centers"
             value={centers.length}
             icon={MapPin}
-            trend={0}
+            // trend={0}
             color="orange"
           />
         </div>
@@ -218,51 +218,51 @@ function AdminDashboard() {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <RevenueChart />
+              {/* <RevenueChart /> */}
               <BookingStatusChart />
-            </div>
 
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5" />
-                  Recent Activity
-                </CardTitle>
-                <CardDescription>Latest bookings and updates</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {events[0].ticket_types[0].bookings
-                    .slice(0, 3)
-                    .map((booking, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <div>
-                            <p className="font-medium">{booking.name}</p>
-                            <p className="text-sm text-slate-600">
-                              Booked {booking.quantity} tickets
-                            </p>
-                          </div>
-                        </div>
-                        <Badge
-                          variant={
-                            booking.status === "CONFIRMED"
-                              ? "default"
-                              : "secondary"
-                          }
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-5 h-5" />
+                    Recent Activity
+                  </CardTitle>
+                  <CardDescription>Latest bookings and updates</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {events[0].ticket_types[0].bookings
+                      .slice(0, 3)
+                      .map((booking, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                         >
-                          {booking.status}
-                        </Badge>
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
+                          <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <div>
+                              <p className="font-medium">{booking.name}</p>
+                              <p className="text-sm text-slate-600">
+                                Booked {booking.quantity} tickets
+                              </p>
+                            </div>
+                          </div>
+                          <Badge
+                            variant={
+                              booking.status === "CONFIRMED"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {booking.status}
+                          </Badge>
+                        </div>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">
