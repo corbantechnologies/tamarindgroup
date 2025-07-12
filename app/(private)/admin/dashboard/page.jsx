@@ -48,38 +48,32 @@ function AdminDashboard() {
     data: account,
     refetch: refetchAccount,
   } = useFetchAccount();
-
   const {
     isLoading: isLoadingCenters,
     data: centers,
     refetch: refetchCenters,
   } = useFetchCenters();
-
   const {
     isLoading: isLoadingFeedbackForms,
     data: feedbackForms,
     refetch: refetchFeedbackForms,
   } = useFetchFeedbackForms();
-
   const {
     isLoading: isLoadingEvents,
     data: events,
     refetch: refetchEvents,
   } = useFetchEvents();
-
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  if (
-    isLoadingAccount ||
-    isLoadingCenters ||
-    isLoadingFeedbackForms ||
-    isLoadingEvents
-  ) {
-    return <LoadingSpinner />;
-  }
+  // Calculate stats without useMemo to avoid conditional Hook issues
+  let stats = {
+    totalBookings: 0,
+    confirmedBookings: 0,
+    totalRevenue: 0,
+    conversionRate: 0,
+  };
 
-  // Calculate statistics
-  const stats = useMemo(() => {
+  if (events) {
     const totalBookings = events.reduce(
       (acc, event) =>
         acc +
@@ -123,13 +117,22 @@ function AdminDashboard() {
     const conversionRate =
       totalBookings > 0 ? (confirmedBookings / totalBookings) * 100 : 0;
 
-    return {
+    stats = {
       totalBookings,
       confirmedBookings,
       totalRevenue,
       conversionRate,
     };
-  }, []);
+  }
+
+  if (
+    isLoadingAccount ||
+    isLoadingCenters ||
+    isLoadingFeedbackForms ||
+    isLoadingEvents
+  ) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
