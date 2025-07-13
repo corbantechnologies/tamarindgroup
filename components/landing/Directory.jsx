@@ -1,7 +1,6 @@
 "use client";
 import { msa_directory } from "@/data/directory-msa";
 import React, { useState } from "react";
-import { FaInfoCircle } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
 

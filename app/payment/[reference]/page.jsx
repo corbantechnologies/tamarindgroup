@@ -233,7 +233,6 @@ function BookingPayment() {
               >
                 {isProcessingPayment ? (
                   <>
-                    <LoadingSpinner />
                     Processing Payment...
                   </>
                 ) : (
