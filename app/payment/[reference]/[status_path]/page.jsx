@@ -46,7 +46,6 @@ function BookingPaymentStatus() {
           toast.error("Unknown payment status. Please contact support.");
         }
       } catch (error) {
-        console.error("Error fetching booking details:", error);
         toast.error("Error loading booking details. Please try again.");
         setLoading(false);
       }

@@ -46,7 +46,6 @@ function BookingPayment() {
         throw new Error("No redirect URL returned from payment API");
       }
     } catch (error) {
-      console.error("Payment error:", error);
       toast.error(
         "Error initiating payment: " + (error.message || "Please try again")
       );
