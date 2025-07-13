@@ -1,5 +1,6 @@
 "use client";
 
+import CentersTable from "@/components/centers/CentersTable";
 import EventsTable from "@/components/events/EventsTable";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import CreateCenter from "@/forms/centers/CreateCenter";
@@ -87,49 +88,7 @@ function AdminDashboard() {
           </div>
 
           {centers?.length > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full table-auto border rounded border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-200 text-gray-700 text-sm">
-                      <th className="border border-gray-300 px-4 py-2">Name</th>
-                      <th className="border border-gray-300 px-4 py-2">
-                        Phone
-                      </th>
-                      <th className="border border-gray-300 px-4 py-2">
-                        Location
-                      </th>
-                      <th className="border border-gray-300 px-4 py-2">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {centers?.map((center) => (
-                      <tr key={center.reference}>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {center?.name}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {center?.contact}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {center?.location}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          <Link
-                            href={`/centers/${center?.center_identity}`}
-                            className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
-                          >
-                            View
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+            <CentersTable centers={centers} />
           ) : (
             <div className="p-3 w-full bg-blue-100">No centers available</div>
           )}

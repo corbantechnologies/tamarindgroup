@@ -1,17 +1,17 @@
 import Link from "next/link";
 import React, { useState } from "react";
 
-function EventsTable({ events = [] }) {
+function CentersTable({ centers }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Pagination for Events
-  const indexOfLastEvent = currentPage * itemsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - itemsPerPage;
-  const currentEvents = Array.isArray(events)
-    ? events.slice(indexOfFirstEvent, indexOfLastEvent)
+  // Pagination for Centers
+  const indexOfLastCenter = currentPage * itemsPerPage;
+  const indexOfFirstCenter = indexOfLastCenter - itemsPerPage;
+  const currentCenters = Array.isArray(centers)
+    ? centers.slice(indexOfFirstCenter, indexOfLastCenter)
     : [];
-  const totalPages = Math.ceil((events?.length || 0) / itemsPerPage);
+  const totalPages = Math.ceil((centers?.length || 0) / itemsPerPage);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -24,34 +24,30 @@ function EventsTable({ events = [] }) {
           <thead>
             <tr className="bg-gray-200 text-gray-700 text-sm">
               <th className="border border-gray-300 px-4 py-2">Name</th>
-              <th className="border border-gray-300 px-4 py-2">Date</th>
-              <th className="border border-gray-300 px-4 py-2">Time</th>
-              <th className="border border-gray-300 px-4 py-2">Venue</th>
+              <th className="border border-gray-300 px-4 py-2">Phone</th>
+              <th className="border border-gray-300 px-4 py-2">Location</th>
               <th className="border border-gray-300 px-4 py-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {currentEvents.length > 0 ? (
-              currentEvents.map((event) => (
-                <tr key={event?.reference}>
+            {currentCenters.length > 0 ? (
+              currentCenters.map((center) => (
+                <tr key={center.reference}>
                   <td className="border border-gray-300 px-4 py-2">
-                    {event.name}
+                    {center?.name}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
-                    {event.start_date}
+                    {center?.contact}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
-                    {event.start_time}
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    {event.venue}
+                    {center?.location}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
                     <Link
-                      href={`/events/${event?.identity}`}
+                      href={`/centers/${center?.center_identity}`}
                       className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
                     >
-                      Manage
+                      View
                     </Link>
                   </td>
                 </tr>
@@ -59,17 +55,17 @@ function EventsTable({ events = [] }) {
             ) : (
               <tr>
                 <td
-                  colSpan="5"
+                  colSpan="4"
                   className="border border-gray-300 px-4 py-2 text-center"
                 >
-                  No events available
+                  No centers available
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      {currentEvents.length > 0 && (
+      {currentCenters.length > 0 && (
         <div className="mt-4 flex justify-between items-center">
           <button
             className="primary-button px-4 py-2 rounded disabled:opacity-50"
@@ -106,4 +102,4 @@ function EventsTable({ events = [] }) {
   );
 }
 
-export default EventsTable;
+export default CentersTable;
