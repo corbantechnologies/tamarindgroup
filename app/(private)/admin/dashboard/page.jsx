@@ -233,8 +233,8 @@ function AdminDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {events[0]?.ticket_types[0]?.bookings
-                      .slice(0, 3)
-                      .map((booking, index) => (
+                      ?.slice(0, 3)
+                      ?.map((booking, index) => (
                         <div
                           key={index}
                           className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
