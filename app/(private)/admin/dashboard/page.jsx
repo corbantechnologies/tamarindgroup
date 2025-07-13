@@ -9,7 +9,7 @@ import { useFetchEvents } from "@/hooks/events/actions";
 import { useFetchFeedbackForms } from "@/hooks/feedbackforms/actions";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -50,22 +50,22 @@ function AdminDashboard() {
   } = useFetchAccount();
   const {
     isLoading: isLoadingCenters,
-    data: centers,
+    data: centers = [], // Default to empty array
     refetch: refetchCenters,
   } = useFetchCenters();
   const {
     isLoading: isLoadingFeedbackForms,
-    data: feedbackForms,
+    data: feedbackForms = [], // Default to empty array
     refetch: refetchFeedbackForms,
   } = useFetchFeedbackForms();
   const {
     isLoading: isLoadingEvents,
-    data: events,
+    data: events = [], // Default to empty array
     refetch: refetchEvents,
   } = useFetchEvents();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Calculate stats without useMemo to avoid conditional Hook issues
+  // Calculate stats with robust validation
   let stats = {
     totalBookings: 0,
     confirmedBookings: 0,
@@ -73,44 +73,51 @@ function AdminDashboard() {
     conversionRate: 0,
   };
 
-  if (events) {
-    const totalBookings = events?.reduce(
+  if (events && Array.isArray(events)) {
+    const totalBookings = events.reduce(
       (acc, event) =>
         acc +
-        event.ticket_types?.reduce(
-          (typeAcc, type) => typeAcc + type?.bookings?.length,
-          0
-        ),
+        (Array.isArray(event?.ticket_types)
+          ? event.ticket_types.reduce(
+              (typeAcc, type) => typeAcc + (type?.bookings?.length || 0),
+              0
+            )
+          : 0),
       0
     );
 
-    const confirmedBookings = events?.reduce(
+    const confirmedBookings = events.reduce(
       (acc, event) =>
         acc +
-        event?.ticket_types?.reduce(
-          (typeAcc, type) =>
-            typeAcc +
-            type.bookings?.filter((b) => b.status === "CONFIRMED")?.length,
-          0
-        ),
+        (Array.isArray(event?.ticket_types)
+          ? event.ticket_types.reduce(
+              (typeAcc, type) =>
+                typeAcc +
+                (type?.bookings?.filter((b) => b.status === "CONFIRMED")
+                  ?.length || 0),
+              0
+            )
+          : 0),
       0
     );
 
-    const totalRevenue = events?.reduce(
+    const totalRevenue = events.reduce(
       (acc, event) =>
         acc +
-        event.ticket_types?.reduce(
-          (typeAcc, type) =>
-            typeAcc +
-            type.bookings
-              ?.filter((b) => b.payment_status === "Completed")
-              ?.reduce(
-                (bookingAcc, booking) =>
-                  bookingAcc + parseFloat(booking.amount),
-                0
-              ),
-          0
-        ),
+        (Array.isArray(event?.ticket_types)
+          ? event.ticket_types.reduce(
+              (typeAcc, type) =>
+                typeAcc +
+                (type?.bookings
+                  ?.filter((b) => b.payment_status === "Completed")
+                  ?.reduce(
+                    (bookingAcc, booking) =>
+                      bookingAcc + parseFloat(booking.amount || 0),
+                    0
+                  ) || 0),
+              0
+            )
+          : 0),
       0
     );
 
@@ -141,7 +148,7 @@ function AdminDashboard() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Welcome back, {account.name}
+              Welcome back, {account?.name || "User"}
             </h1>
             <p className="text-slate-600 mt-2">
               Here's what's happening with your events today.
@@ -165,28 +172,24 @@ function AdminDashboard() {
             title="Total Bookings"
             value={stats.totalBookings}
             icon={Users}
-            // trend={12}
             color="blue"
           />
           <StatsCard
             title="Revenue"
             value={`KES ${stats.totalRevenue.toFixed(2)}`}
             icon={DollarSign}
-            // trend={8}
             color="green"
           />
           <StatsCard
             title="Conversion Rate"
             value={`${stats.conversionRate.toFixed(1)}%`}
             icon={TrendingUp}
-            // trend={-2}
             color="purple"
           />
           <StatsCard
             title="Active Centers"
-            value={centers?.length}
+            value={centers?.length || 0}
             icon={MapPin}
-            // trend={0}
             color="orange"
           />
         </div>
@@ -232,33 +235,41 @@ function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {events[0]?.ticket_types[0]?.bookings
-                      ?.slice(0, 3)
-                      ?.map((booking, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <div>
-                              <p className="font-medium">{booking.name}</p>
-                              <p className="text-sm text-slate-600">
-                                Booked {booking.quantity} tickets
-                              </p>
-                            </div>
-                          </div>
-                          <Badge
-                            variant={
-                              booking.status === "CONFIRMED"
-                                ? "default"
-                                : "secondary"
-                            }
+                    {events?.length > 0 &&
+                    events[0]?.ticket_types?.length > 0 &&
+                    events[0].ticket_types[0]?.bookings?.length > 0 ? (
+                      events[0].ticket_types[0].bookings
+                        .slice(0, 3)
+                        .map((booking, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                           >
-                            {booking.status}
-                          </Badge>
-                        </div>
-                      ))}
+                            <div className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <div>
+                                <p className="font-medium">{booking.name}</p>
+                                <p className="text-sm text-slate-600">
+                                  Booked {booking.quantity} tickets
+                                </p>
+                              </div>
+                            </div>
+                            <Badge
+                              variant={
+                                booking.status === "CONFIRMED"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                            >
+                              {booking.status}
+                            </Badge>
+                          </div>
+                        ))
+                    ) : (
+                      <p className="text-slate-600">
+                        No recent bookings available.
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -274,9 +285,13 @@ function AdminDashboard() {
               </Button>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {events.map((event, index) => (
-                <EventsCard key={index} event={event} />
-              ))}
+              {events?.length > 0 ? (
+                events.map((event, index) => (
+                  <EventsCard key={index} event={event} />
+                ))
+              ) : (
+                <p className="text-slate-600">No events available.</p>
+              )}
             </div>
           </TabsContent>
 
@@ -289,9 +304,13 @@ function AdminDashboard() {
               </Button>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {centers.map((center, index) => (
-                <CenterCard key={index} center={center} />
-              ))}
+              {centers?.length > 0 ? (
+                centers.map((center, index) => (
+                  <CenterCard key={index} center={center} />
+                ))
+              ) : (
+                <p className="text-slate-600">No centers available.</p>
+              )}
             </div>
           </TabsContent>
 
