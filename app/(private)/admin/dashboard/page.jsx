@@ -4,6 +4,7 @@ import LoadingSpinner from "@/components/general/LoadingSpinner";
 import CreateCenter from "@/forms/centers/CreateCenter";
 import { useFetchAccount } from "@/hooks/accounts/actions";
 import { useFetchCenters } from "@/hooks/centers/actions";
+import { useFetchEvents } from "@/hooks/events/actions";
 import { useFetchFeedbackForms } from "@/hooks/feedbackforms/actions";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,33 +29,46 @@ function AdminDashboard() {
     refetch: refetchFeedbackForms,
   } = useFetchFeedbackForms();
 
+  const {
+    isLoading: isLoadingEvents,
+    data: events,
+    refetch: refetchEvents,
+  } = useFetchEvents();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  console.log(centers);
-
-  if (isLoadingAccount || isLoadingCenters || isLoadingFeedbackForms) {
+  if (
+    isLoadingAccount ||
+    isLoadingCenters ||
+    isLoadingFeedbackForms ||
+    isLoadingEvents
+  ) {
     return <LoadingSpinner />;
   }
 
   return (
     <div className="container mx-auto p-4">
       <section className="mb-3">
-        <h2 className="text-2xl font-bold">Hello {account?.name}</h2>
+        <h2 className="text-2xl font-bold">Hello {account?.name || "User"}</h2>
       </section>
 
       <section id="summary" className="mb-3 mt-3">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded shadow">
             <h4 className="font-bold">Information</h4>
             <p>{account?.name}</p>
           </div>
           <div className="bg-white p-4 rounded shadow">
-            <h4 className="font-bold">Total Centers</h4>
-            <p>{centers?.length || 0}</p>
+            <p className="font-bold text-2xl">{centers?.length || 0}</p>
+            <h4>Total Centers</h4>
           </div>
           <div className="bg-white p-4 rounded shadow">
-            <h4 className="font-bold">Feedback Forms</h4>
-            <p>{feedbackForms?.length || 0}</p>
+            <p className="font-bold text-2xl">{feedbackForms?.length || 0}</p>
+            <h4>Feedback Forms</h4>
+          </div>
+          <div className="bg-white p-4 rounded shadow">
+            <p className="font-bold text-2xl">{events?.length || 0}</p>
+            <h4>Events</h4>
           </div>
         </div>
       </section>

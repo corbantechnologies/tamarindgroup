@@ -27,7 +27,6 @@ function CreateQuestion({ feedbackForm, closeModal, refetch }) {
           closeModal();
         } catch (error) {
           toast?.error("Error creating question");
-          console.log(error)
         } finally {
           setLoading(false);
         }

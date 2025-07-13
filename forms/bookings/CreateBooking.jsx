@@ -65,7 +65,6 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
       );
       return matchingBooking;
     } catch (error) {
-      console.error("Error finding booking:", error);
       return null;
     }
   };
@@ -137,7 +136,6 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                 formData.append("phone", values.phone);
 
                 const createResponse = await createBooking(formData);
-                console.log("createBooking response:", createResponse); // Debug full response
                 const bookingReference = createResponse?.data?.reference;
 
                 if (!bookingReference) {
@@ -200,7 +198,6 @@ function CreateBooking({ event, closeModal, refetchEvent }) {
                   );
                 }
               } catch (error) {
-                console.error("Booking error:", error);
                 const errorMessage =
                   error?.response?.data?.non_field_errors?.[0] ||
                   error?.response?.data?.detail ||

@@ -33,7 +33,6 @@ function FeedbackFormDetail({ params }) {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false); // New state for update modal
   const itemsPerPage = 10;
 
-  console.log(feedbackForm)
 
   const filterFeedbacks = useMemo(() => {
     if (!allFeedbacks) return [];
