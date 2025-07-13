@@ -90,7 +90,7 @@ function AdminDashboard() {
         event?.ticket_types?.reduce(
           (typeAcc, type) =>
             typeAcc +
-            type.bookings.filter((b) => b.status === "CONFIRMED")?.length,
+            type.bookings?.filter((b) => b.status === "CONFIRMED")?.length,
           0
         ),
       0
