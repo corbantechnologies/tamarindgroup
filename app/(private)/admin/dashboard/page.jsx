@@ -1,5 +1,6 @@
 "use client";
 
+import EventsTable from "@/components/events/EventsTable";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import CreateCenter from "@/forms/centers/CreateCenter";
 import { useFetchAccount } from "@/hooks/accounts/actions";
@@ -131,6 +132,26 @@ function AdminDashboard() {
             </>
           ) : (
             <div className="p-3 w-full bg-blue-100">No centers available</div>
+          )}
+        </div>
+      </section>
+
+      <section className="mb-3 mt-3 py-3">
+        <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
+          <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
+            <h6 className="text-xl font-semibold">Events</h6>
+            <button
+              className="secondary-button px-2 py-1 rounded text-center leading-[1.5rem]"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Create Event
+            </button>
+          </div>
+
+          {events?.length > 0 ? (
+            <EventsTable events={events} />
+          ) : (
+            <div className="p-3 w-full bg-blue-100">No events available</div>
           )}
         </div>
       </section>
