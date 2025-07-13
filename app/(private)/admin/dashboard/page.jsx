@@ -74,37 +74,37 @@ function AdminDashboard() {
   };
 
   if (events) {
-    const totalBookings = events.reduce(
+    const totalBookings = events?.reduce(
       (acc, event) =>
         acc +
-        event.ticket_types.reduce(
-          (typeAcc, type) => typeAcc + type.bookings.length,
+        event.ticket_types?.reduce(
+          (typeAcc, type) => typeAcc + type?.bookings?.length,
           0
         ),
       0
     );
 
-    const confirmedBookings = events.reduce(
+    const confirmedBookings = events?.reduce(
       (acc, event) =>
         acc +
-        event.ticket_types.reduce(
+        event?.ticket_types?.reduce(
           (typeAcc, type) =>
             typeAcc +
-            type.bookings.filter((b) => b.status === "CONFIRMED").length,
+            type.bookings.filter((b) => b.status === "CONFIRMED")?.length,
           0
         ),
       0
     );
 
-    const totalRevenue = events.reduce(
+    const totalRevenue = events?.reduce(
       (acc, event) =>
         acc +
-        event.ticket_types.reduce(
+        event.ticket_types?.reduce(
           (typeAcc, type) =>
             typeAcc +
             type.bookings
-              .filter((b) => b.payment_status === "Completed")
-              .reduce(
+              ?.filter((b) => b.payment_status === "Completed")
+              ?.reduce(
                 (bookingAcc, booking) =>
                   bookingAcc + parseFloat(booking.amount),
                 0
@@ -184,7 +184,7 @@ function AdminDashboard() {
           />
           <StatsCard
             title="Active Centers"
-            value={centers.length}
+            value={centers?.length}
             icon={MapPin}
             // trend={0}
             color="orange"
@@ -232,7 +232,7 @@ function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {events[0].ticket_types[0].bookings
+                    {events[0]?.ticket_types[0]?.bookings
                       .slice(0, 3)
                       .map((booking, index) => (
                         <div
