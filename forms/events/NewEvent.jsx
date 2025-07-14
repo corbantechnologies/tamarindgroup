@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { apiMultipartActions } from "@/tools/api";
 import toast from "react-hot-toast";
 
-function NewEvent({ closeModal }) {
+function NewEvent({ closeModal, refetchEvents }) {
   const axios = useAxiosAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -63,6 +63,7 @@ function NewEvent({ closeModal }) {
               "Event created successfully! Proceed to add tickets."
             );
             closeModal();
+            refetchEvents();
           } catch (error) {
             toast.error("Failed to create event. Please try again.");
             // console.error("Create Event Error:", error.response?.data || error);
