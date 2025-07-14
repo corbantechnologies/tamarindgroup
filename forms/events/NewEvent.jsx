@@ -25,8 +25,28 @@ function NewEvent({ closeModal, refetchEvents }) {
           ],
         }}
         onSubmit={async (values) => {
-          // Debug form values
-          console.log("Form values:", values);
+          // Create JSON object for logging
+          const logData = {
+            name: values.name,
+            description: values.description,
+            start_date: values.start_date,
+            start_time: values.start_time ? `${values.start_time}:00` : "",
+            end_date: values.end_date,
+            end_time: values.end_time ? `${values.end_time}:00` : "",
+            venue: values.venue,
+            capacity: values.capacity ? Number(values.capacity) : null,
+            ticket_types: values.ticket_types.map((ticket) => ({
+              name: ticket.name,
+              price: ticket.price ? Number(ticket.price) : null,
+              quantity_available: ticket.quantity_available
+                ? Number(ticket.quantity_available)
+                : null,
+              is_limited: ticket.is_limited,
+            })),
+          };
+
+          // Log JSON object
+          console.log(JSON.stringify(logData, null, 4));
 
           // Create FormData for backend
           const formData = new FormData();
@@ -36,25 +56,34 @@ function NewEvent({ closeModal, refetchEvents }) {
           formData.append("name", values.name);
           formData.append("description", values.description);
           formData.append("start_date", values.start_date);
-          formData.append("start_time", values.start_time || "");
+          formData.append(
+            "start_time",
+            values.start_time ? `${values.start_time}:00` : ""
+          );
           formData.append("end_date", values.end_date || "");
-          formData.append("end_time", values.end_time || "");
+          formData.append(
+            "end_time",
+            values.end_time ? `${values.end_time}:00` : ""
+          );
           formData.append("venue", values.venue);
-          formData.append("capacity", values.capacity);
+          formData.append(
+            "capacity",
+            values.capacity ? values.capacity.toString() : ""
+          );
 
           // Append ticket_types as nested structure
           values.ticket_types.forEach((ticket, index) => {
             formData.append(`ticket_types[${index}][name]`, ticket.name || "");
             formData.append(
               `ticket_types[${index}][price]`,
-              ticket.price ? Number(ticket.price).toString() : ""
+              ticket.price ? ticket.price.toString() : ""
             );
-            formData.append(
-              `ticket_types[${index}][quantity_available]`,
-              ticket.quantity_available
-                ? Number(ticket.quantity_available).toString()
-                : ""
-            );
+            if (ticket.is_limited && ticket.quantity_available) {
+              formData.append(
+                `ticket_types[${index}][quantity_available]`,
+                ticket.quantity_available.toString()
+              );
+            }
             formData.append(
               `ticket_types[${index}][is_limited]`,
               ticket.is_limited.toString()
@@ -66,8 +95,14 @@ function NewEvent({ closeModal, refetchEvents }) {
             console.log(`${key}: ${value}`);
           }
 
-          // Uncomment to enable submission
-          await createEvent(values, axios);
+          // Submit to backend
+          try {
+            await createEvent(formData, axios);
+            refetchEvents(); // Refresh event list
+            closeModal(); // Close modal on success
+          } catch (error) {
+            console.error("Create Event Error:", error.response?.data || error);
+          }
         }}
       >
         {({ values, setFieldValue }) => (
@@ -125,7 +160,7 @@ function NewEvent({ closeModal, refetchEvents }) {
                   htmlFor="start_time"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Start Time
+                  Start Time (Optional)
                 </label>
                 <Field
                   name="start_time"
