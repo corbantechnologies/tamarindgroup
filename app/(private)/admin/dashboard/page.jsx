@@ -4,6 +4,7 @@ import CentersTable from "@/components/centers/CentersTable";
 import EventsTable from "@/components/events/EventsTable";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import CreateCenter from "@/forms/centers/CreateCenter";
+import CreateEvent from "@/forms/events/CreateEvent";
 import { useFetchAccount } from "@/hooks/accounts/actions";
 import { useFetchCenters } from "@/hooks/centers/actions";
 import { useFetchEvents } from "@/hooks/events/actions";
@@ -38,6 +39,7 @@ function AdminDashboard() {
   } = useFetchEvents();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [eventModalOpen, setEventModalOpen] = useState(false);
 
   if (
     isLoadingAccount ||
@@ -101,7 +103,7 @@ function AdminDashboard() {
             <h6 className="text-xl font-semibold">Events</h6>
             <button
               className="secondary-button px-2 py-1 rounded text-center leading-[1.5rem]"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setEventModalOpen(true)}
             >
               Create Event
             </button>
@@ -116,8 +118,8 @@ function AdminDashboard() {
       </section>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
               onClick={() => setIsModalOpen(false)}
@@ -127,6 +129,23 @@ function AdminDashboard() {
             <CreateCenter
               refetch={refetchCenters}
               closeModal={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {eventModalOpen && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-start justify-center z-50 pt-4">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl font-bold"
+              onClick={() => setEventModalOpen(false)}
+            >
+              ✕
+            </button>
+            <CreateEvent
+              refetch={refetchEvents}
+              closeModal={() => setEventModalOpen(false)}
             />
           </div>
         </div>

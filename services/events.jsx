@@ -13,3 +13,7 @@ export const getEvent = async (event_identity) => {
   );
   return response?.data || {};
 };
+
+export const createEvent = async (formData, axios) => {
+  await apiMultipartActions?.post(`/api/v1/events/`, formData, axios);
+};
