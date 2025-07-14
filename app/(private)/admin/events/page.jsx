@@ -36,6 +36,7 @@ import {
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import NewEvent from "@/forms/events/NewEvent";
+import EventCreate from "@/forms/events/EventCreate";
 
 function Events() {
   const {
@@ -463,7 +464,10 @@ function Events() {
             >
               ✕
             </button>
-            <NewEvent closeModal={() => setEventModalOpen(false)} />
+            <EventCreate
+              refetchEvents={refetchEvents}
+              closeModal={() => setEventModalOpen(false)}
+            />
           </div>
         </div>
       )}
