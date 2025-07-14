@@ -1,7 +1,11 @@
 "use client";
 
+import CentersTable from "@/components/centers/CentersTable";
+import EventsTable from "@/components/events/EventsTable";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import CreateCenter from "@/forms/centers/CreateCenter";
+import CreateEvent from "@/forms/events/CreateEvent";
+import NewEvent from "@/forms/events/NewEvent";
 import { useFetchAccount } from "@/hooks/accounts/actions";
 import { useFetchCenters } from "@/hooks/centers/actions";
 import { useFetchEvents } from "@/hooks/events/actions";
@@ -36,6 +40,7 @@ function AdminDashboard() {
   } = useFetchEvents();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [eventModalOpen, setEventModalOpen] = useState(false);
 
   if (
     isLoadingAccount ||
@@ -86,58 +91,36 @@ function AdminDashboard() {
           </div>
 
           {centers?.length > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full table-auto border rounded border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-200 text-gray-700 text-sm">
-                      <th className="border border-gray-300 px-4 py-2">Name</th>
-                      <th className="border border-gray-300 px-4 py-2">
-                        Phone
-                      </th>
-                      <th className="border border-gray-300 px-4 py-2">
-                        Location
-                      </th>
-                      <th className="border border-gray-300 px-4 py-2">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {centers?.map((center) => (
-                      <tr key={center.reference}>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {center?.name}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {center?.contact}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          {center?.location}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-2">
-                          <Link
-                            href={`/centers/${center?.center_identity}`}
-                            className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
-                          >
-                            View
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+            <CentersTable centers={centers} />
           ) : (
             <div className="p-3 w-full bg-blue-100">No centers available</div>
           )}
         </div>
       </section>
 
+      <section className="mb-3 mt-3 py-3">
+        <div className="mb-3 p-3 rounded shadow bg-white border border-gray-300">
+          <div className="mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-300 pb-3">
+            <h6 className="text-xl font-semibold">Events</h6>
+            <button
+              className="secondary-button px-2 py-1 rounded text-center leading-[1.5rem]"
+              // onClick={() => setEventModalOpen(true)}
+            >
+              Create Event
+            </button>
+          </div>
+
+          {events?.length > 0 ? (
+            <EventsTable events={events} />
+          ) : (
+            <div className="p-3 w-full bg-blue-100">No events available</div>
+          )}
+        </div>
+      </section>
+
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
               onClick={() => setIsModalOpen(false)}
@@ -147,6 +130,23 @@ function AdminDashboard() {
             <CreateCenter
               refetch={refetchCenters}
               closeModal={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {eventModalOpen && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-start justify-center z-50 pt-4 px-4">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl max-h-[95vh] overflow-y-auto">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl font-bold"
+              onClick={() => setEventModalOpen(false)}
+            >
+              ✕
+            </button>
+            <NewEvent
+              refetch={refetchEvents}
+              closeModal={() => setEventModalOpen(false)}
             />
           </div>
         </div>
