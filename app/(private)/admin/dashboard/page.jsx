@@ -5,6 +5,7 @@ import EventsTable from "@/components/events/EventsTable";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import CreateCenter from "@/forms/centers/CreateCenter";
 import CreateEvent from "@/forms/events/CreateEvent";
+import NewEvent from "@/forms/events/NewEvent";
 import { useFetchAccount } from "@/hooks/accounts/actions";
 import { useFetchCenters } from "@/hooks/centers/actions";
 import { useFetchEvents } from "@/hooks/events/actions";
@@ -135,15 +136,15 @@ function AdminDashboard() {
       )}
 
       {eventModalOpen && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-start justify-center z-50 pt-4">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-start justify-center z-50 pt-4 px-4">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl max-h-[95vh] overflow-y-auto">
             <button
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl font-bold"
               onClick={() => setEventModalOpen(false)}
             >
               ✕
             </button>
-            <CreateEvent
+            <NewEvent
               refetch={refetchEvents}
               closeModal={() => setEventModalOpen(false)}
             />
