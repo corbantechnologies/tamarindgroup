@@ -104,7 +104,7 @@ function AdminDashboard() {
             <h6 className="text-xl font-semibold">Events</h6>
             <button
               className="secondary-button px-2 py-1 rounded text-center leading-[1.5rem]"
-              onClick={() => setEventModalOpen(true)}
+              // onClick={() => setEventModalOpen(true)}
             >
               Create Event
             </button>
