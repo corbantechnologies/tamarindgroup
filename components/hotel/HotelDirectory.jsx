@@ -90,7 +90,7 @@ const HotelDirectory = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Hero Section */}
-      <div className="relative h-[60vh] bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 overflow-hidden">
+      <div className="relative h-[80vh] bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 overflow-hidden">
         <div className="absolute inset-0 bg-black/30" />
         <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
@@ -134,30 +134,32 @@ const HotelDirectory = () => {
           </p>
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {hotelDirectory.map((category) => {
-            const IconComponent = category.icon;
-            const isActive = activeCategory === category.id;
+        {/* Category Tabs - Horizontal Scroll */}
+        <div className="mb-12 overflow-x-auto">
+          <div className="flex gap-4 min-w-max px-4 md:px-0 md:justify-center">
+            {hotelDirectory.map((category) => {
+              const IconComponent = category.icon;
+              const isActive = activeCategory === category.id;
 
-            return (
-              <Button
-                key={category.id}
-                variant={isActive ? "default" : "outline"}
-                size="lg"
-                onClick={() => setActiveCategory(category.id)}
-                className={cn(
-                  "flex items-center gap-3 px-6 py-3 rounded-full transition-all duration-300",
-                  isActive
-                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105"
-                    : "hover:shadow-md hover:scale-105 bg-white"
-                )}
-              >
-                <IconComponent className="w-5 h-5" />
-                <span className="font-medium">{category.name}</span>
-              </Button>
-            );
-          })}
+              return (
+                <Button
+                  key={category.id}
+                  variant={isActive ? "default" : "outline"}
+                  size="lg"
+                  onClick={() => setActiveCategory(category.id)}
+                  className={cn(
+                    "flex items-center gap-3 px-6 py-3 rounded-full transition-all duration-300 whitespace-nowrap",
+                    isActive
+                      ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105"
+                      : "hover:shadow-md hover:scale-105 bg-white"
+                  )}
+                >
+                  <IconComponent className="w-5 h-5" />
+                  <span className="font-medium">{category.name}</span>
+                </Button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Services Grid */}
