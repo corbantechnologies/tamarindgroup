@@ -1,6 +1,7 @@
 "use client";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
+import "@radix-ui/themes/styles.css";
 import NextAuthProvider from "@/providers/NextAuthProvider";
 import TanstackQueryProvider from "@/providers/TanstackQueryProvider";
 import { Analytics } from "@vercel/analytics/react";
