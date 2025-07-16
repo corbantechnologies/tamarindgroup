@@ -61,6 +61,30 @@ function Navbar() {
               </Link>
             </li>
 
+            {/* <li
+              className={`${
+                pathname === "/admin/centers"
+                  ? "text-[var(--mainRed)]"
+                  : "text-[var(--mainBlue)]"
+              } hover:text-[var(--mainBlue)] transition-colors`}
+            >
+              <Link href="/admin/centers" onClick={() => setIsOpen(false)}>
+                Centers
+              </Link>
+            </li> */}
+
+            <li
+              className={`${
+                pathname === "/admin/events"
+                  ? "text-[var(--mainRed)]"
+                  : "text-[var(--mainBlue)]"
+              } hover:text-[var(--mainBlue)] transition-colors`}
+            >
+              <Link href="/admin/events" onClick={() => setIsOpen(false)}>
+                Events
+              </Link>
+            </li>
+
             <li>
               <button
                 onClick={() => signOut()}
