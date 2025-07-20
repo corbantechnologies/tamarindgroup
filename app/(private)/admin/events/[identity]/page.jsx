@@ -2,48 +2,51 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { 
-  ArrowLeft, 
-  Calendar, 
-  MapPin, 
-  Users, 
-  Clock, 
-  Plus, 
-  Edit, 
+import {
+  ArrowLeft,
+  Calendar,
+  MapPin,
+  Users,
+  Clock,
+  Plus,
+  Edit,
   Trash2,
   Eye,
   AlertCircle,
   Badge,
-  DollarSign
+  DollarSign,
 } from "lucide-react";
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchEvent } from "@/hooks/events/actions";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge as BadgeComponent } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParams, useRouter } from "next/navigation";
 
-
-
-
 function EventDetail() {
   const { identity } = useParams();
   const navigate = useRouter();
-  const [isCreateTicketDialogOpen, setIsCreateTicketDialogOpen] = useState(false);
+  const [isCreateTicketDialogOpen, setIsCreateTicketDialogOpen] =
+    useState(false);
 
   const {
     isLoading: isLoadingEvent,
@@ -58,10 +61,10 @@ function EventDetail() {
     let totalRevenue = 0;
     let confirmedBookings = 0;
 
-    event.ticket_types.forEach(ticketType => {
-      ticketType.bookings.forEach(booking => {
+    event.ticket_types.forEach((ticketType) => {
+      ticketType.bookings.forEach((booking) => {
         totalBookings += booking.quantity;
-        if (booking.status === 'CONFIRMED') {
+        if (booking.status === "CONFIRMED") {
           confirmedBookings += booking.quantity;
           totalRevenue += parseFloat(ticketType.price) * booking.quantity;
         }
@@ -72,7 +75,7 @@ function EventDetail() {
       totalBookings,
       confirmedBookings,
       totalRevenue,
-      ticketTypes: event.ticket_types.length
+      ticketTypes: event.ticket_types.length,
     };
   };
 
@@ -88,10 +91,10 @@ function EventDetail() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Failed to load event details. Please try again.
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => refetchEvent()} 
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetchEvent()}
                 className="ml-4"
               >
                 Retry
@@ -109,9 +112,7 @@ function EventDetail() {
         <div className="max-w-7xl mx-auto">
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Event not found.
-            </AlertDescription>
+            <AlertDescription>Event not found.</AlertDescription>
           </Alert>
         </div>
       </div>
@@ -127,10 +128,10 @@ function EventDetail() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-6">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
-              onClick={() => navigate?.back('/events')}
+              onClick={() => navigate?.back("/events")}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -146,9 +147,11 @@ function EventDetail() {
 
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{event.name}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {event.name}
+              </h1>
               <p className="text-gray-600 mb-4">{event.description}</p>
-              
+
               {/* Event Details */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center text-gray-600">
@@ -165,7 +168,9 @@ function EventDetail() {
                 <div className="flex items-center text-gray-600">
                   <Users className="h-4 w-4 mr-2" />
                   <span>
-                    {event.capacity ? `${event.capacity} capacity` : "Unlimited capacity"}
+                    {event.capacity
+                      ? `${event.capacity} capacity`
+                      : "Unlimited capacity"}
                   </span>
                 </div>
               </div>
@@ -176,7 +181,10 @@ function EventDetail() {
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Event
               </Button>
-              <Button variant="outline" className="text-red-600 hover:text-red-700">
+              <Button
+                variant="outline"
+                className="text-red-600 hover:text-red-700"
+              >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </Button>
@@ -187,8 +195,8 @@ function EventDetail() {
         {/* Event Image */}
         {event.image && (
           <div className="mb-8">
-            <img 
-              src={event.image} 
+            <img
+              src={event.image}
               alt={event.name}
               className="w-full h-64 object-cover rounded-lg shadow-sm"
             />
@@ -202,25 +210,29 @@ function EventDetail() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Bookings</p>
-                  <p className="text-2xl font-bold">{stats.confirmedBookings}</p>
+                  <p className="text-2xl font-bold">
+                    {stats.confirmedBookings}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold">KES {stats.totalRevenue.toFixed(2)}</p>
+                  <p className="text-2xl font-bold">
+                    KES {stats.totalRevenue.toFixed(2)}
+                  </p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -232,17 +244,18 @@ function EventDetail() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Capacity Used</p>
                   <p className="text-2xl font-bold">
-                    {event.capacity ? 
-                      `${Math.round((stats.confirmedBookings / event.capacity) * 100)}%` : 
-                      'N/A'
-                    }
+                    {event.capacity
+                      ? `${Math.round(
+                          (stats.confirmedBookings / event.capacity) * 100
+                        )}%`
+                      : "N/A"}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-orange-600" />
@@ -263,8 +276,11 @@ function EventDetail() {
           <TabsContent value="tickets" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">Ticket Types</h2>
-              
-              <Dialog open={isCreateTicketDialogOpen} onOpenChange={setIsCreateTicketDialogOpen}>
+
+              <Dialog
+                open={isCreateTicketDialogOpen}
+                onOpenChange={setIsCreateTicketDialogOpen}
+              >
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
@@ -278,31 +294,40 @@ function EventDetail() {
                       Add a new ticket type for {event.name}
                     </DialogDescription>
                   </DialogHeader>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="ticket-name">Ticket Name</Label>
-                      <Input id="ticket-name" placeholder="e.g., VIP, General Admission" />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="ticket-price">Price (KES)</Label>
-                      <Input id="ticket-price" type="number" placeholder="0.00" />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="ticket-quantity">Quantity Available</Label>
-                      <Input 
-                        id="ticket-quantity" 
-                        type="number" 
-                        placeholder="Leave empty for unlimited" 
+                      <Input
+                        id="ticket-name"
+                        placeholder="e.g., VIP, General Admission"
                       />
                     </div>
-                    
+
+                    <div>
+                      <Label htmlFor="ticket-price">Price (KES)</Label>
+                      <Input
+                        id="ticket-price"
+                        type="number"
+                        placeholder="0.00"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="ticket-quantity">
+                        Quantity Available
+                      </Label>
+                      <Input
+                        id="ticket-quantity"
+                        type="number"
+                        placeholder="Leave empty for unlimited"
+                      />
+                    </div>
+
                     <div className="flex gap-2 pt-4">
                       <Button className="flex-1">Create Ticket Type</Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setIsCreateTicketDialogOpen(false)}
                       >
                         Cancel
@@ -316,7 +341,9 @@ function EventDetail() {
             {event.ticket_types.length === 0 ? (
               <Card className="p-12 text-center">
                 <Badge className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No ticket types yet</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No ticket types yet
+                </h3>
                 <p className="text-gray-600 mb-4">
                   Get started by creating your first ticket type for this event.
                 </p>
@@ -328,33 +355,45 @@ function EventDetail() {
             ) : (
               <div className="grid gap-4">
                 {event.ticket_types.map((ticketType) => {
-                  const ticketStats = ticketType.bookings.reduce((acc, booking) => {
-                    if (booking.status === 'CONFIRMED') {
-                      acc.sold += booking.quantity;
-                      acc.revenue += parseFloat(ticketType.price) * booking.quantity;
-                    }
-                    return acc;
-                  }, { sold: 0, revenue: 0 });
+                  const ticketStats = ticketType.bookings.reduce(
+                    (acc, booking) => {
+                      if (booking.status === "CONFIRMED") {
+                        acc.sold += booking.quantity;
+                        acc.revenue +=
+                          parseFloat(ticketType.price) * booking.quantity;
+                      }
+                      return acc;
+                    },
+                    { sold: 0, revenue: 0 }
+                  );
 
                   return (
                     <Card key={ticketType.id}>
                       <CardHeader className="pb-3">
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle className="text-lg">{ticketType.name}</CardTitle>
-                            <CardDescription>KES {ticketType.price}</CardDescription>
+                            <CardTitle className="text-lg">
+                              {ticketType.name}
+                            </CardTitle>
+                            <CardDescription>
+                              KES {ticketType.price}
+                            </CardDescription>
                           </div>
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm">
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="outline" size="sm" className="text-red-600">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600"
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
                       </CardHeader>
-                      
+
                       <CardContent>
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <div>
@@ -364,15 +403,17 @@ function EventDetail() {
                           <div>
                             <p className="text-gray-600">Available</p>
                             <p className="font-semibold">
-                              {ticketType.quantity_available ? 
-                                ticketType.quantity_available - ticketStats.sold : 
-                                'Unlimited'
-                              }
+                              {ticketType.quantity_available
+                                ? ticketType.quantity_available -
+                                  ticketStats.sold
+                                : "Unlimited"}
                             </p>
                           </div>
                           <div>
                             <p className="text-gray-600">Revenue</p>
-                            <p className="font-semibold">KES {ticketStats.revenue.toFixed(2)}</p>
+                            <p className="font-semibold">
+                              KES {ticketStats.revenue.toFixed(2)}
+                            </p>
                           </div>
                         </div>
                       </CardContent>
@@ -388,10 +429,14 @@ function EventDetail() {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Bookings</CardTitle>
-                <CardDescription>Latest bookings for this event</CardDescription>
+                <CardDescription>
+                  Latest bookings for this event
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Bookings functionality will be implemented here.</p>
+                <p className="text-gray-600">
+                  Bookings functionality will be implemented here.
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -415,13 +460,19 @@ function EventDetail() {
                   <div>
                     <p className="text-gray-600">Created At</p>
                     <p className="font-medium">
-                      {format(new Date(event.created_at), "MMM dd, yyyy 'at' HH:mm")}
+                      {format(
+                        new Date(event.created_at),
+                        "MMM dd, yyyy 'at' HH:mm"
+                      )}
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-600">Last Updated</p>
                     <p className="font-medium">
-                      {format(new Date(event.updated_at), "MMM dd, yyyy 'at' HH:mm")}
+                      {format(
+                        new Date(event.updated_at),
+                        "MMM dd, yyyy 'at' HH:mm"
+                      )}
                     </p>
                   </div>
                 </div>

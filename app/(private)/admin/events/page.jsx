@@ -35,7 +35,6 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
-import NewEvent from "@/forms/events/NewEvent";
 import EventCreate from "@/forms/events/EventCreate";
 
 function Events() {
