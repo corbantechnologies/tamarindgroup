@@ -10,3 +10,8 @@ export const getUser = async (userId, axios) => {
 export const updateProfile = async (userId, formData, axios) => {
   await apiActions?.patch(`/api/v1/auth/${userId}/`, formData, axios);
 };
+
+export const getUsers = async (axios) => {
+  const response = await apiActions?.get("/api/v1/auth/", axios);
+  return response?.data || [];
+};
