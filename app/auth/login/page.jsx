@@ -22,7 +22,6 @@ function Login() {
     });
     const session = await getSession();
 
-    setLoading(false);
     if (response?.error) {
       toast?.error("Invalid email or password");
     } else {
@@ -41,6 +40,7 @@ function Login() {
         router.push("/");
       }
     }
+    setLoading(false);
   };
 
   return (
