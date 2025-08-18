@@ -2,7 +2,7 @@
 
 import { apiActions, apiMultipartActions } from "@/tools/api";
 
-export const createApprovalRequest = async (axios, formData) => {
+export const createApprovalRequest = async (formData, axios) => {
   await apiMultipartActions?.post(`/api/v1/approvalrequests/`, formData, axios);
 };
 
