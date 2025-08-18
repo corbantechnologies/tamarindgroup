@@ -1,12 +1,10 @@
 "use client";
 
+import ApprovalRequestsTable from "@/components/approvalrequests/ApprovalRequestsTable";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import MakeApprovalRequest from "@/forms/approvalrequests/MakeApprovalRequest";
 import { useFetchAccount, useFetchUsers } from "@/hooks/accounts/actions";
-import {
-  useFetchApprovalRequest,
-  useFetchApprovalRequests,
-} from "@/hooks/approvalrequests/actions";
+import { useFetchApprovalRequests } from "@/hooks/approvalrequests/actions";
 import React, { useState } from "react";
 
 function EmployeeDashboard() {
@@ -28,7 +26,7 @@ function EmployeeDashboard() {
     refetch: refetchApprovalRequests,
   } = useFetchApprovalRequests();
 
-  console.log(users)
+  console.log(approvalRequests);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -55,13 +53,7 @@ function EmployeeDashboard() {
         </div>
 
         {approvalRequests?.length > 0 ? (
-          <ul className="list-disc pl-5">
-            {approvalRequests.map((approvalRequest) => (
-              <li key={approvalRequest.reference}>
-                {approvalRequest.description}
-              </li>
-            ))}
-          </ul>
+          <ApprovalRequestsTable approvalrequests={approvalRequests} />
         ) : (
           <p>No approval requests found.</p>
         )}
