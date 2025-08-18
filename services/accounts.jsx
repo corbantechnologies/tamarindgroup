@@ -13,5 +13,5 @@ export const updateProfile = async (userId, formData, axios) => {
 
 export const getUsers = async (axios) => {
   const response = await apiActions?.get("/api/v1/auth/", axios);
-  return response?.data || [];
+  return response?.data?.results || [];
 };

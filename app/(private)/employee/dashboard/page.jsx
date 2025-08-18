@@ -1,12 +1,13 @@
 "use client";
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
-import { useFetchAccount } from "@/hooks/accounts/actions";
+import MakeApprovalRequest from "@/forms/approvalrequests/MakeApprovalRequest";
+import { useFetchAccount, useFetchUsers } from "@/hooks/accounts/actions";
 import {
   useFetchApprovalRequest,
   useFetchApprovalRequests,
 } from "@/hooks/approvalrequests/actions";
-import React from "react";
+import React, { useState } from "react";
 
 function EmployeeDashboard() {
   const {
@@ -16,12 +17,22 @@ function EmployeeDashboard() {
   } = useFetchAccount();
 
   const {
+    isLoading: isLoadingUsers,
+    data: users,
+    refetch: refetchUsers,
+  } = useFetchUsers();
+
+  const {
     isLoading: isLoadingApprovalRequests,
     data: approvalRequests,
     refetch: refetchApprovalRequests,
   } = useFetchApprovalRequests();
 
-  if (isLoadingAccount || isLoadingApprovalRequests) {
+  console.log(users)
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  if (isLoadingAccount || isLoadingApprovalRequests || isLoadingUsers) {
     return <LoadingSpinner />;
   }
 
@@ -35,7 +46,12 @@ function EmployeeDashboard() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">Your Approval Requests</h3>
 
-          <button className="primary-button px-2 py-1 rounded">Request</button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="primary-button px-2 py-1 rounded"
+          >
+            Request
+          </button>
         </div>
 
         {approvalRequests?.length > 0 ? (
@@ -50,6 +66,24 @@ function EmployeeDashboard() {
           <p>No approval requests found.</p>
         )}
       </section>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div className=" p-6 rounded-lg shadow-lg w-full max-w-md max-h-full overflow-y-auto">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsModalOpen(false)}
+            >
+              ✕
+            </button>
+            <MakeApprovalRequest
+              refetch={refetchApprovalRequests}
+              closeModal={() => setIsModalOpen(false)}
+              users={users}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
