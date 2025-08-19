@@ -43,33 +43,17 @@ function ApprovalRequestsTable({ approvalrequests }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+      <table className="w-full table-auto border rounded border-gray-300">
         <thead className="bg-gray-100">
           <tr>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Title
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Description
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Status
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Request Type
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Created By
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              First Approver
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Created At
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Actions
-            </th>
+            <th className="border border-gray-300 px-4 py-2">Title</th>
+            <th className="border border-gray-300 px-4 py-2">Description</th>
+            <th className="border border-gray-300 px-4 py-2">Status</th>
+            <th className="border border-gray-300 px-4 py-2">Request Type</th>
+            <th className="border border-gray-300 px-4 py-2">Created By</th>
+            <th className="border border-gray-300 px-4 py-2">First Approver</th>
+            <th className="border border-gray-300 px-4 py-2">Created At</th>
+            <th className="border border-gray-300 px-4 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>

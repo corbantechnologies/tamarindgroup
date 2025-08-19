@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 
 function ApprovalStepsTable({ approvalSteps, pagination, onPageChange }) {
@@ -41,33 +42,16 @@ function ApprovalStepsTable({ approvalSteps, pagination, onPageChange }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+      <table className="w-full table-auto border rounded border-gray-300">
         <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Title
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Description
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Status
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Approver
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Step Order
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Comments
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Created At
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">
-              Actions
-            </th>
+          <tr className="bg-gray-200 text-gray-700 text-sm">
+            <th className="border border-gray-300 px-4 py-2">Title</th>
+            <th className="border border-gray-300 px-4 py-2">Description</th>
+            <th className="border border-gray-300 px-4 py-2">Status</th>
+            <th className="border border-gray-300 px-4 py-2">Approver</th>
+            <th className="border border-gray-300 px-4 py-2">Comments</th>
+            <th className="border border-gray-300 px-4 py-2">Created At</th>
+            <th className="border border-gray-300 px-4 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -98,9 +82,7 @@ function ApprovalStepsTable({ approvalSteps, pagination, onPageChange }) {
                 <td className="px-4 py-2 text-sm text-gray-900 border-b">
                   {step.approver}
                 </td>
-                <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                  {step.step_order}
-                </td>
+
                 <td className="px-4 py-2 text-sm text-gray-900 border-b">
                   {step.comments || "None"}
                 </td>
@@ -108,12 +90,12 @@ function ApprovalStepsTable({ approvalSteps, pagination, onPageChange }) {
                   {formatDate(step.created_at)}
                 </td>
                 <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                  <button
+                  <Link
+                    href={`/approvalsteps/${step.reference}`}
                     className="text-blue-600 hover:text-blue-800 font-semibold"
-                    onClick={() => alert(`View details for ${step.reference}`)}
                   >
                     View Details
-                  </button>
+                  </Link>
                 </td>
               </tr>
             ))

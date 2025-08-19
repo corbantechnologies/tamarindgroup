@@ -65,7 +65,7 @@ function FinanceDashboard() {
         {approvalRequests?.length > 0 ? (
           <ApprovalRequestsTable approvalrequests={approvalRequests.results} />
         ) : (
-          <div className="p-3 bg-gray-400 italic text-white rounded">
+          <div className="p-3 italic text-red-600 border rounded">
             No approval requests found.
           </div>
         )}
@@ -79,9 +79,11 @@ function FinanceDashboard() {
         </div>
 
         {approvalSteps?.length > 0 ? (
-          <ApprovalStepsTable approvalSteps={approvalSteps} />
+          <>
+            <ApprovalStepsTable approvalSteps={approvalSteps} />
+          </>
         ) : (
-          <div className="p-3 bg-gray-400 italic text-white rounded">
+          <div className="p-3 italic text-red-600 border rounded">
             No approval steps requiring your approval.
           </div>
         )}
