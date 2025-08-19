@@ -152,7 +152,11 @@ function ApprovalStepDetail({ params }) {
                   toast.success("Approval step updated successfully.");
                   refetchStep();
                 } catch (error) {
-                  toast.error(`Failed to update approval step`);
+                  toast.error(
+                    `Failed to update approval step: ${
+                      error.response?.data?.detail || error.message
+                    }`
+                  );
                   console.error("Error updating approval step:", error);
                 } finally {
                   setLoading(false);
