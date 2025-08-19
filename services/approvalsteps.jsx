@@ -2,8 +2,8 @@
 
 import { apiActions } from "@/tools/api";
 
-export const createApprovalStep = async (axios, formData) => {
-  await apiActions?.post(`/api/v1/approvalsteps/`, formData, axios);
+export const createApprovalStep = async (axios, values) => {
+  await apiActions?.post(`/api/v1/approvalsteps/`, values, axios);
 };
 
 export const getApprovalSteps = async (axios) => {
@@ -19,6 +19,10 @@ export const getApprovalStep = async (axios, reference) => {
   return response?.data || {};
 };
 
-export const updateApprovalStep = async (axios, reference, formData) => {
-  await apiActions?.put(`/api/v1/approvalsteps/${reference}/`, formData, axios);
+export const updateApprovalStep = async (reference, values, axios) => {
+  await apiActions?.patch(
+    `/api/v1/approvalsteps/${reference}/`,
+    values,
+    axios
+  );
 };
