@@ -5,6 +5,7 @@ import { useFetchApprovalStep } from "@/hooks/approvalsteps/actions";
 import useAxiosAuth from "@/hooks/general/useAxiosAuth";
 import { apiActions } from "@/tools/api";
 import { Field, Form, Formik } from "formik";
+import { useRouter } from "next/navigation";
 import React, { use, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -12,6 +13,7 @@ function ApprovalStepDetail({ params }) {
   const { reference } = use(params);
   const axios = useAxiosAuth();
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const {
     isLoading: isLoadingStep,
@@ -44,7 +46,28 @@ function ApprovalStepDetail({ params }) {
 
   return (
     <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Approval Step Details</h2>
+      <div className="gap-4 flex items-center">
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mb-4"
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
+        <h2 className="text-2xl font-bold mb-4">Approval Step Details</h2>
+      </div>
       <div className="bg-white border border-gray-200 rounded-lg shadow-md p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
