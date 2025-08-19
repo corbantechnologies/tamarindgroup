@@ -1,19 +1,22 @@
 "use client";
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import CreateApprovalStep from "@/forms/approvalsteps/CreateApprovalStep";
+import { useFetchUsers } from "@/hooks/accounts/actions";
 import { useFetchApprovalStep } from "@/hooks/approvalsteps/actions";
 import useAxiosAuth from "@/hooks/general/useAxiosAuth";
 import { apiActions } from "@/tools/api";
 import { Field, Form, Formik } from "formik";
-import { useRouter } from "next/navigation";
-import React, { use, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 
 function ApprovalStepDetail({ params }) {
-  const { reference } = use(params);
+  const { reference } = useParams();
   const axios = useAxiosAuth();
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     isLoading: isLoadingStep,
@@ -21,7 +24,9 @@ function ApprovalStepDetail({ params }) {
     refetch: refetchStep,
   } = useFetchApprovalStep(reference);
 
-  if (isLoadingStep) {
+  const { isLoading: isLoadingUsers, data: users } = useFetchUsers();
+
+  if (isLoadingStep || isLoadingUsers) {
     return <LoadingSpinner />;
   }
 
@@ -173,10 +178,10 @@ function ApprovalStepDetail({ params }) {
                       required
                     >
                       <option value="">Select Status</option>
-                      <option value="APPROVED">Approve</option>
-                      <option value="REJECTED">Reject</option>
-                      <option value="REVIEWED">Review</option>
-                      <option value="SKIPPED">Skip</option>
+                      <option value="Approved">Approve</option>
+                      <option value="Rejected">Reject</option>
+                      <option value="Reviewed">Review</option>
+                      <option value="Skipped">Skip</option>
                     </Field>
                   </div>
                   <div>
@@ -211,6 +216,36 @@ function ApprovalStepDetail({ params }) {
               )}
             </Formik>
           </>
+        )}
+
+        {(step.status === "Approved" || step.status === "Reviewed") && (
+          <div className="mt-4">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Create Next Approval Step
+            </button>
+          </div>
+        )}
+
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="relative p-6 rounded-lg shadow-lg w-full max-w-md max-h-full overflow-y-auto bg-white">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+              <CreateApprovalStep
+                refetch={refetchStep}
+                closeModal={() => setIsModalOpen(false)}
+                users={users}
+                approvalRequest={step?.approval_request}
+              />
+            </div>
+          </div>
         )}
       </div>
     </div>

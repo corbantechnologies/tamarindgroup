@@ -1,5 +1,6 @@
 import useAxiosAuth from "@/hooks/general/useAxiosAuth";
 import { createApprovalRequest } from "@/services/approvalrequests";
+import { apiActions } from "@/tools/api";
 import { Field, Form, Formik } from "formik";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
@@ -19,7 +20,7 @@ function CreateApprovalStep({ refetch, closeModal, users, approvalRequest }) {
         onSubmit={async (values) => {
           setLoading(true);
           try {
-            await createApprovalRequest(values, axios);
+            await apiActions?.post(`/api/v1/approvalsteps/`, values, axios);
             toast.success("Approval step created successfully!");
             closeModal();
             refetch();
@@ -31,11 +32,16 @@ function CreateApprovalStep({ refetch, closeModal, users, approvalRequest }) {
           }
         }}
       >
-        {({ touched }) => (
+        {({ touched, values }) => (
           <Form className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow">
             <h2 className="mb-6 text-2xl font-bold text-center">
               Create Approval Step
             </h2>
+            <Field
+              type="hidden"
+              name="approval_reqest"
+              value={approvalRequest}
+            />
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
                 Approver
@@ -49,9 +55,9 @@ function CreateApprovalStep({ refetch, closeModal, users, approvalRequest }) {
                     }`}
               >
                 <option value="">Select an approver</option>
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
+                {users?.map((user) => (
+                  <option key={user?.email} value={user?.email}>
+                    {user?.name}
                   </option>
                 ))}
               </Field>
