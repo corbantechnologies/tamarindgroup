@@ -2,7 +2,6 @@
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useFetchApprovalStep } from "@/hooks/approvalsteps/actions";
-import { updateApprovalStep } from "@/hooks/approvalsteps/actions";
 import useAxiosAuth from "@/hooks/general/useAxiosAuth";
 import { apiActions } from "@/tools/api";
 import { Field, Form, Formik } from "formik";
@@ -68,6 +67,10 @@ function ApprovalStepDetail({ params }) {
                   ? "bg-green-100 text-green-800"
                   : step.status === "REJECTED"
                   ? "bg-red-100 text-red-800"
+                  : step.status === "REVIEWED"
+                  ? "bg-blue-100 text-blue-800"
+                  : step.status === "SKIPPED"
+                  ? "bg-gray-100 text-gray-800"
                   : "bg-blue-100 text-blue-800"
               }`}
             >
@@ -96,94 +99,96 @@ function ApprovalStepDetail({ params }) {
           </div>
         </div>
 
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">
-          Update Approval Step
-        </h3>
-
-        <Formik
-          initialValues={{
-            status: step.status || "",
-            comments: step.comments || "",
-          }}
-          onSubmit={async (values) => {
-            setLoading(true);
-            try {
-              await apiActions?.patch(
-                `/api/v1/approvalsteps/${reference}/`,
-                values,
-                axios
-              );
-              toast.success("Approval step updated successfully.");
-              refetchStep();
-            } catch (error) {
-              toast.error("Failed to update approval step.");
-              console.error("Error updating approval step:", error);
-            } finally {
-              setLoading(false);
-            }
-          }}
-        >
-          {({ touched }) => (
-            <Form className="space-y-4">
-              <div>
-                <label
-                  htmlFor="status"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Status
-                </label>
-                <Field
-                  as="select"
-                  id="status"
-                  name="status"
-                  className={`mt-1 block w-full border border-gray-300 rounded-md shadow-sm
-                  p-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    touched.status ? "border-red-500" : ""
-                  }`}
-                  required
-                >
-                  <option value="">Select Status</option>
-                  <option value="Approved">Approve</option>
-                  <option value="Rejected">Reject</option>
-                  <option value="Reviewed">Review</option>
-                  <option value="Skipped">Skip</option>
-                </Field>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="comments"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Comments (Optional)
-                </label>
-                <Field
-                  as="textarea"
-                  id="comments"
-                  name="comments"
-                  className={`mt-1 block w-full border border-gray-300 rounded-md shadow-sm
-                  p-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    touched.comments ? "border-red-500" : ""
-                  }`}
-                  rows="4"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className={`inline-flex items-center px-4 py-2 border border-transparent
-                rounded-md shadow-sm text-sm font-medium text-white bg-blue-600
-                hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2
-                focus:ring-blue-500 ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={loading}
-              >
-                {loading ? "Updating..." : "Update"}
-              </button>
-            </Form>
-          )}
-        </Formik>
+        {step.status === "PENDING" && (
+          <>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              Update Approval Step
+            </h3>
+            <Formik
+              initialValues={{
+                status: "",
+                comments: "",
+              }}
+              onSubmit={async (values) => {
+                if (!values.status) {
+                  toast.error("Please select a status.");
+                  return;
+                }
+                setLoading(true);
+                try {
+                  await apiActions.patch(
+                    `/api/v1/approvalsteps/${reference}/`,
+                    values,
+                    axios
+                  );
+                  toast.success("Approval step updated successfully.");
+                  refetchStep();
+                } catch (error) {
+                  toast.error(`Failed to update approval step`);
+                  console.error("Error updating approval step:", error);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              {({ touched }) => (
+                <Form className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="status"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Status
+                    </label>
+                    <Field
+                      as="select"
+                      id="status"
+                      name="status"
+                      className={`mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        touched.status ? "border-red-500" : ""
+                      }`}
+                      required
+                    >
+                      <option value="">Select Status</option>
+                      <option value="APPROVED">Approve</option>
+                      <option value="REJECTED">Reject</option>
+                      <option value="REVIEWED">Review</option>
+                      <option value="SKIPPED">Skip</option>
+                    </Field>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="comments"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Comments (Optional)
+                    </label>
+                    <Field
+                      as="textarea"
+                      id="comments"
+                      name="comments"
+                      className={`mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        touched.comments ? "border-red-500" : ""
+                      }`}
+                      rows="4"
+                    />
+                  </div>
+                  <div>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                        loading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      {loading ? "Updating..." : "Update"}
+                    </button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </>
+        )}
       </div>
     </div>
   );
