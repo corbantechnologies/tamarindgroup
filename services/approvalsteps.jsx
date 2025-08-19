@@ -2,7 +2,7 @@
 
 import { apiActions } from "@/tools/api";
 
-export const createApprovalStep = async (axios, values) => {
+export const createApprovalStep = async (values, axios) => {
   await apiActions?.post(`/api/v1/approvalsteps/`, values, axios);
 };
 
