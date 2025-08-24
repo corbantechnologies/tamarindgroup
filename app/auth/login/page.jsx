@@ -22,17 +22,25 @@ function Login() {
     });
     const session = await getSession();
 
-    setLoading(false);
     if (response?.error) {
       toast?.error("Invalid email or password");
     } else {
       toast?.success("Login successful! Redirecting...");
       if (session?.user?.is_admin === true) {
         router.push("/admin/dashboard");
+      } else if (session?.user?.is_employee === true) {
+        router.push("/employee/dashboard");
+      } else if (session?.user?.is_finance === true) {
+        router.push("/finance/dashboard");
+      } else if (session?.user?.is_kitchen === true) {
+        router.push("/kitchen/dashboard");
+      } else if (session?.user?.is_manager === true) {
+        router.push("/manager/dashboard");
       } else {
         router.push("/");
       }
     }
+    setLoading(false);
   };
 
   return (
@@ -83,7 +91,7 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          
+
           <button
             type="submit"
             className={`w-full text-white secondary-button font-medium rounded-lg text-sm px-5 py-2.5 text-center ${
