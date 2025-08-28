@@ -13,7 +13,7 @@ export const getApprovalSteps = async (axios) => {
 
 export const getApprovalStep = async (axios, reference) => {
   const response = await apiActions?.get(
-    `/api/v1/approvalsteps/${reference}/detail/`,
+    `/api/v1/approvalsteps/${reference}/`,
     axios
   );
   return response?.data || {};
