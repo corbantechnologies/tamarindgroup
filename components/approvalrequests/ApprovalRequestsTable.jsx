@@ -53,7 +53,7 @@ function ApprovalRequestsTable({ approvalrequests }) {
             <th className="border border-gray-300 px-4 py-2">Created By</th>
             <th className="border border-gray-300 px-4 py-2">First Approver</th>
             <th className="border border-gray-300 px-4 py-2">Created At</th>
-            <th className="border border-gray-300 px-4 py-2">Actions</th>
+            {/* <th className="border border-gray-300 px-4 py-2">Actions</th> */}
           </tr>
         </thead>
         <tbody>
@@ -93,7 +93,7 @@ function ApprovalRequestsTable({ approvalrequests }) {
                 <td className="px-4 py-2 text-sm text-gray-900 border-b">
                   {formatDate(request.created_at)}
                 </td>
-                <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                {/* <td className="px-4 py-2 text-sm text-gray-900 border-b">
                   <button
                     className="text-blue-600 hover:text-blue-800 font-semibold"
                     onClick={() =>
@@ -102,7 +102,7 @@ function ApprovalRequestsTable({ approvalrequests }) {
                   >
                     View Details
                   </button>
-                </td>
+                </td> */}
               </tr>
             ))
           ) : (
