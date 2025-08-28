@@ -2,7 +2,7 @@
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import CreateApprovalStep from "@/forms/approvalsteps/CreateApprovalStep";
-import { useFetchUsers } from "@/hooks/accounts/actions";
+import { useFetchAccount, useFetchUsers } from "@/hooks/accounts/actions";
 import { useFetchApprovalStep } from "@/hooks/approvalsteps/actions";
 import useAxiosAuth from "@/hooks/general/useAxiosAuth";
 import { apiActions } from "@/tools/api";
@@ -17,6 +17,12 @@ function ApprovalStepDetail({ params }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const {
+    isLoading: isLoadingAccount,
+    data: account,
+    refetch: refetchAccount,
+  } = useFetchAccount();
 
   const {
     isLoading: isLoadingStep,
@@ -136,6 +142,7 @@ function ApprovalStepDetail({ params }) {
               initialValues={{
                 status: "",
                 comments: "",
+                is_final: false,
               }}
               onSubmit={async (values) => {
                 if (!values.status) {
@@ -187,6 +194,19 @@ function ApprovalStepDetail({ params }) {
                       <option value="Reviewed">Review</option>
                       <option value="Skipped">Skip</option>
                     </Field>
+                  </div>
+                  <div>
+                    <label className="flex items-center">
+                      <Field
+                        type="checkbox"
+                        name="is_final"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500
+                        border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">
+                        Mark as Final Step
+                      </span>
+                    </label>
                   </div>
                   <div>
                     <label

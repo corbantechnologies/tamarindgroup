@@ -14,16 +14,8 @@ function ApprovalStepsTable({ approvalSteps, pagination, onPageChange }) {
     });
   };
 
-  // Filter steps where approver is finance@mail.com or manager@mail.com
-  const filteredSteps =
-    approvalSteps?.filter(
-      (step) =>
-        step.approver === "finance@mail.com" ||
-        step.approver === "manager@mail.com"
-    ) || [];
-
   // Calculate pagination details
-  const totalItems = pagination?.count || filteredSteps.length;
+  const totalItems = pagination?.count || approvalSteps?.length;
   const currentPage = pagination?.page || 1;
   const itemsPerPage = 5; // Fixed page size
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -55,8 +47,8 @@ function ApprovalStepsTable({ approvalSteps, pagination, onPageChange }) {
           </tr>
         </thead>
         <tbody>
-          {filteredSteps.length > 0 ? (
-            filteredSteps.map((step) => (
+          {approvalSteps?.length > 0 ? (
+            approvalSteps?.map((step) => (
               <tr key={step.reference} className="hover:bg-gray-50">
                 <td className="px-4 py-2 text-sm text-gray-900 border-b">
                   {step.request_info.title}
