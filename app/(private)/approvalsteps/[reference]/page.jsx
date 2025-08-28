@@ -136,6 +136,7 @@ function ApprovalStepDetail({ params }) {
               initialValues={{
                 status: "",
                 comments: "",
+                is_final: false,
               }}
               onSubmit={async (values) => {
                 if (!values.status) {
@@ -187,6 +188,19 @@ function ApprovalStepDetail({ params }) {
                       <option value="Reviewed">Review</option>
                       <option value="Skipped">Skip</option>
                     </Field>
+                  </div>
+                  <div>
+                    <label className="flex items-center">
+                      <Field
+                        type="checkbox"
+                        name="is_final"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500
+                        border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">
+                        Mark as Final Step
+                      </span>
+                    </label>
                   </div>
                   <div>
                     <label

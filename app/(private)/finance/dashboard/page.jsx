@@ -63,7 +63,7 @@ function FinanceDashboard() {
         </div>
 
         {approvalRequests?.length > 0 ? (
-          <ApprovalRequestsTable approvalrequests={approvalRequests.results} />
+          <ApprovalRequestsTable approvalrequests={approvalRequests} />
         ) : (
           <div className="p-3 italic text-red-600 border rounded">
             No approval requests found.
