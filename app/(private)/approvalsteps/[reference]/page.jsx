@@ -2,7 +2,7 @@
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import CreateApprovalStep from "@/forms/approvalsteps/CreateApprovalStep";
-import { useFetchUsers } from "@/hooks/accounts/actions";
+import { useFetchAccount, useFetchUsers } from "@/hooks/accounts/actions";
 import { useFetchApprovalStep } from "@/hooks/approvalsteps/actions";
 import useAxiosAuth from "@/hooks/general/useAxiosAuth";
 import { apiActions } from "@/tools/api";
@@ -17,6 +17,12 @@ function ApprovalStepDetail({ params }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const {
+    isLoading: isLoadingAccount,
+    data: account,
+    refetch: refetchAccount,
+  } = useFetchAccount();
 
   const {
     isLoading: isLoadingStep,
