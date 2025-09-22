@@ -7,6 +7,7 @@ import { useFetchApprovalStep } from "@/hooks/approvalsteps/actions";
 import useAxiosAuth from "@/hooks/general/useAxiosAuth";
 import { apiActions } from "@/tools/api";
 import { Field, Form, Formik } from "formik";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
@@ -19,18 +20,10 @@ function ApprovalStepDetail({ params }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
-    isLoading: isLoadingAccount,
-    data: account,
-    refetch: refetchAccount,
-  } = useFetchAccount();
-
-  const {
     isLoading: isLoadingStep,
     data: step,
     refetch: refetchStep,
   } = useFetchApprovalStep(reference);
-
-  console.log(step);
 
   const { isLoading: isLoadingUsers, data: users } = useFetchUsers();
 
@@ -129,12 +122,6 @@ function ApprovalStepDetail({ params }) {
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-semibold text-gray-700">
-                Request Type
-              </h3>
-              <p className="text-gray-800">{step.request_info.request_type}</p>
-            </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-semibold text-gray-700">
                 Step Order
               </h3>
               <p className="text-gray-800">{step.step_order}</p>
@@ -157,29 +144,25 @@ function ApprovalStepDetail({ params }) {
               </h3>
               <p className="text-gray-800">{formatDate(step.updated_at)}</p>
             </div>
-            {/* <div className="sm:col-span-2">
+            <div className="sm:col-span-2">
               <h3 className="text-base sm:text-lg font-semibold text-gray-700">
-                Attachments
+                Attachment
               </h3>
-              {step.attachments && step.attachments.length > 0 ? (
-                <ul className="list-disc pl-5 text-gray-800">
-                  {step.attachments.map((attachment, index) => (
-                    <li key={index}>
-                      <a
-                        href={attachment.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-teal-400 hover:text-teal-500 hover:underline"
-                      >
-                        {attachment.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+              {step.request_info.attachment ? (
+                <p>
+                  <Link
+                    href={step.request_info.attachment}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-teal-400 hover:text-teal-500 hover:underline"
+                  >
+                    Files
+                  </Link>
+                </p>
               ) : (
-                <p className="text-gray-800">No attachments available.</p>
+                <p className="text-gray-800">No attachment available.</p>
               )}
-            </div> */}
+            </div>
           </div>
 
           {step.status === "Pending" && (
