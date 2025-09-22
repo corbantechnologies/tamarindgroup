@@ -30,7 +30,7 @@ function ApprovalStepDetail({ params }) {
     refetch: refetchStep,
   } = useFetchApprovalStep(reference);
 
-  console.log(step)
+  console.log(step);
 
   const { isLoading: isLoadingUsers, data: users } = useFetchUsers();
 
@@ -126,6 +126,12 @@ function ApprovalStepDetail({ params }) {
                 Approver
               </h3>
               <p className="text-gray-800">{step.approver}</p>
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-700">
+                Request Type
+              </h3>
+              <p className="text-gray-800">{step.request_info.request_type}</p>
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-semibold text-gray-700">
