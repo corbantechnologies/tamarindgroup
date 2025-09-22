@@ -36,6 +36,8 @@ function ManagerDashboard() {
     refetch: refetchApprovalSteps,
   } = useFetchApprovalSteps();
 
+  console.log("Approval Requests:", approvalRequests?.length, approvalRequests);
+
   if (
     isLoadingAccount ||
     isLoadingApprovalRequests ||
@@ -44,67 +46,72 @@ function ManagerDashboard() {
   ) {
     return <LoadingSpinner />;
   }
+
   return (
-    <div className="container mx-auto p-4">
-      <section className="mb-3">
-        <h2 className="text-2xl font-bold">Hello {account?.name || "User"}</h2>
-      </section>
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto max-w-7xl p-4 sm:p-6">
+        <section className="mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-blue-900">
+            Hello {account?.name || "User"}
+          </h2>
+        </section>
 
-      <section className="mb-3">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold">Your Approval Requests</h3>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="primary-button px-2 py-1 rounded"
-          >
-            Request
-          </button>
-        </div>
-
-        {approvalRequests?.length > 0 ? (
-          <ApprovalRequestsTable approvalrequests={approvalRequests.results} />
-        ) : (
-          <div className="p-3 italic text-red-600 border rounded">
-            No approval requests found.
-          </div>
-        )}
-      </section>
-
-      <section className="mb-3">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold">
-            Approval Steps Requiring Your Approval
-          </h3>
-        </div>
-
-        {approvalSteps?.length > 0 ? (
-          <>
-            <ApprovalStepsTable approvalSteps={approvalSteps} />
-          </>
-        ) : (
-          <div className="p-3 italic text-red-600 border rounded">
-            No approval steps requiring your approval.
-          </div>
-        )}
-      </section>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="p-6 rounded-lg shadow-lg w-full max-w-md max-h-full overflow-y-auto">
+        <section className="mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-blue-900">
+              Your Approval Requests
+            </h3>
             <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => setIsModalOpen(true)}
+              className="mt-2 sm:mt-0 bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
             >
-              ✕
+              Request
             </button>
-            <MakeApprovalRequest
-              refetch={refetchApprovalRequests}
-              closeModal={() => setIsModalOpen(false)}
-              users={users}
-            />
           </div>
-        </div>
-      )}
+
+          {Array.isArray(approvalRequests) && approvalRequests.length > 0 ? (
+            <ApprovalRequestsTable approvalrequests={approvalRequests} />
+          ) : (
+            <div className="p-4 italic text-red-600 bg-white border border-red-200 rounded-lg shadow-sm">
+              No approval requests found.
+            </div>
+          )}
+        </section>
+
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-blue-900">
+              Approval Steps Requiring Your Approval
+            </h3>
+          </div>
+
+          {Array.isArray(approvalSteps) && approvalSteps.length > 0 ? (
+            <ApprovalStepsTable approvalSteps={approvalSteps} />
+          ) : (
+            <div className="p-4 italic text-red-600 bg-white border border-red-200 rounded-lg shadow-sm">
+              No approval steps requiring your approval.
+            </div>
+          )}
+        </section>
+
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:max-w-lg max-h-[90vh] overflow-y-auto">
+              <button
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl font-semibold"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ✕
+              </button>
+              <MakeApprovalRequest
+                refetch={refetchApprovalRequests}
+                closeModal={() => setIsModalOpen(false)}
+                users={users}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
