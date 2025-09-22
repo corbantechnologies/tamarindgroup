@@ -157,7 +157,7 @@ function ApprovalStepDetail({ params }) {
               </h3>
               <p className="text-gray-800">{formatDate(step.updated_at)}</p>
             </div>
-            <div className="sm:col-span-2">
+            {/* <div className="sm:col-span-2">
               <h3 className="text-base sm:text-lg font-semibold text-gray-700">
                 Attachments
               </h3>
@@ -179,7 +179,7 @@ function ApprovalStepDetail({ params }) {
               ) : (
                 <p className="text-gray-800">No attachments available.</p>
               )}
-            </div>
+            </div> */}
           </div>
 
           {step.status === "Pending" && (
