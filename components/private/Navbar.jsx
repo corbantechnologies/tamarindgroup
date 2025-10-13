@@ -72,13 +72,12 @@ function Navbar() {
             </li> */}
 
             <li>
-              <Link
-                href="/auth/login"
+              <button
                 onClick={() => signOut()}
                 className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
               >
                 Logout
-              </Link>
+              </button>
             </li>
           </ul>
         </div>
