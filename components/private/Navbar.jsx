@@ -17,9 +17,7 @@ function Navbar() {
   return (
     <div className="sticky top-0 z-50 p-3 bg-white shadow">
       <div className="flex justify-between items-center">
-        <Link href="/admin/dashboard">
-          <Image src="/logo.png" width={80} height={80} alt="logo" />
-        </Link>
+        <Image src="/logo.png" width={80} height={80} alt="logo" />
 
         {/* Hamburger Menu */}
         <button
@@ -49,7 +47,7 @@ function Navbar() {
           } md:flex flex-col md:flex-row gap-4 absolute md:static top-16 left-0 w-full md:w-auto bg-white p-3 md:p-0 z-40`}
         >
           <ul className="flex flex-col md:flex-row md:items-center gap-4">
-            <li
+            {/* <li
               className={`${
                 pathname === "/admin/dashboard"
                   ? "text-[var(--mainRed)]"
@@ -59,7 +57,7 @@ function Navbar() {
               <Link href="/admin/dashboard" onClick={() => setIsOpen(false)}>
                 Dashboard
               </Link>
-            </li>
+            </li> */}
 
             {/* <li
               className={`${
@@ -73,25 +71,14 @@ function Navbar() {
               </Link>
             </li> */}
 
-            <li
-              className={`${
-                pathname === "/admin/events"
-                  ? "text-[var(--mainRed)]"
-                  : "text-[var(--mainBlue)]"
-              } hover:text-[var(--mainBlue)] transition-colors`}
-            >
-              <Link href="/admin/events" onClick={() => setIsOpen(false)}>
-                Events
-              </Link>
-            </li>
-
             <li>
-              <button
+              <Link
+                href="/auth/login"
                 onClick={() => signOut()}
                 className="primary-button px-2 py-1 rounded text-center leading-[1.5rem]"
               >
                 Logout
-              </button>
+              </Link>
             </li>
           </ul>
         </div>
