@@ -36,7 +36,7 @@ function Login() {
         router.push("/kitchen/dashboard");
       } else if (session?.user?.is_manager === true) {
         router.push("/manager/dashboard");
-      } else if (session?.user?.is_manager === true) {
+      } else if (session?.user?.is_gm === true) {
         router.push("/manager/dashboard");
       } else {
         router.push("/");
